@@ -1,6 +1,9 @@
 "use client";
 import { useState } from "react";
+import { toast } from "sonner";
 import { LockKeyhole, UserRound } from "lucide-react";
+import { login } from "../services/auth.service";
+import { getApiErrorMessage } from "@/src/lib/errors/api-error";
 
 export default function LoginForm() {
   const [username, setUsername] = useState("");
@@ -12,7 +15,7 @@ export default function LoginForm() {
     password: "",
   });
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     const newErrors = {
@@ -34,10 +37,17 @@ export default function LoginForm() {
       return;
     }
 
-    console.log({
-      username,
-      password,
-    });
+    try {
+      const response = await login({
+        username,
+        password,
+      });
+      const fullName = `${response.employee.firstName} ${response.employee.surname}`
+      toast.success(`Iniciso de sesión existoso. Bienvenido ${fullName}`)
+    } catch (error) {
+      toast.error(getApiErrorMessage(error))
+      
+    }
   };
 
   return (
