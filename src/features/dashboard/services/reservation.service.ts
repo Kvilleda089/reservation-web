@@ -1,5 +1,6 @@
 import api_reservation from "@/src/lib/axios/axios";
 import { ReservationResponse } from "../types/reservation-response.type";
+import { CreateReservationRequest } from "../types/reservation-request";
 
 
 
@@ -17,5 +18,16 @@ export const getReservation = async (
             },
         },
     );
+    return response.data;
+};
+
+export const createReservation = async (
+    data: CreateReservationRequest,
+): Promise<ReservationResponse> => {
+    const response = await api_reservation.post<ReservationResponse>(
+        "/reservations",
+       data
+    )
+
     return response.data;
 }
