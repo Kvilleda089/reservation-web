@@ -1,9 +1,11 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import { toast } from "sonner";
 import { X } from "lucide-react";
 import { ReservationResourceEnum, StatusReservationEnum } from "../../types/reservation-request";
 import { createReservation } from "../../services/reservation.service";
+import { getApiErrorMessage } from "@/src/lib/errors/api-error";
 
 
 
@@ -153,8 +155,11 @@ export function CreateReservationDialog({
 
       setFormData(initialFormData);
       onClose();
+
+      toast.success(`Se ha creado la reservación exitosamente.`)
     } catch (error) {
       console.error("Error al crear la reservación:", error);
+      toast.error(`Error al crear la reservación Motivo: ${getApiErrorMessage(error)}`)
     } finally {
       setSubmitting(false);
     }
@@ -284,7 +289,6 @@ export function CreateReservationDialog({
                   name="secondSurname"
                   value={formData.client.secondSurname}
                   onChange={handleClientChange}
-                  required
                   className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                   placeholder="Ej. Ramírez"
                 />
