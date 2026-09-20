@@ -1,6 +1,7 @@
 import api_reservation from "@/src/lib/axios/axios";
 import { ReservationResponse } from "../types/reservation-response.type";
 import { CreateReservationRequest } from "../types/reservation-request";
+import { CreateReservationDepositRequest } from "../types/reservation-deposit-request";
 
 
 
@@ -27,6 +28,17 @@ export const createReservation = async (
     const response = await api_reservation.post<ReservationResponse>(
         "/reservations",
        data
+    )
+
+    return response.data;
+};
+
+export const createReservationDeposit = async (
+  data: CreateReservationDepositRequest
+): Promise<ReservationResponse> => {
+    const response = await api_reservation.post<ReservationResponse>(
+        "/reservation-deposit",
+        data,
     )
 
     return response.data;

@@ -7,6 +7,7 @@ import { getReservation } from "../services/reservation.service";
 import { ReservationStatus } from "./reservation-status";
 import { ActionsMenu } from "./action-menu";
 import { CreateReservationDialog } from "./dialog/create-reservation";
+import { CreateReservationDeposit } from "./dialog/reservation-deposit";
 
 export function ReservationTable() {
   const [reservations, setReservations] = useState<Reservation[]>([]);
@@ -26,6 +27,14 @@ export function ReservationTable() {
   //Open Dialogo
   const [openCreateDialog, setOpenCreateDialog] = useState(false);
 
+  //Dialogo deposito
+  const [openDepositDialog, setOpenDepositDialog] = useState(false);
+  const [selectedReservationId, setSelectedReservationId] = useState<
+    string | null
+  >(null);
+
+  const [refreshReservations, setRefreshReservations] = useState(0);
+
   useEffect(() => {
     const fetchReservations = async () => {
       try {
@@ -34,7 +43,6 @@ export function ReservationTable() {
         const response = await getReservation(page, limit);
 
         setReservations(response.data);
-
         setTotalPage(Math.ceil(response.pagination.totalRecords / limit));
       } catch (error) {
         console.error("Error al obtener reservaciones: ", error);
@@ -44,7 +52,7 @@ export function ReservationTable() {
     };
 
     fetchReservations();
-  }, [page, limit]);
+  }, [page, limit, refreshReservations]);
 
   const formatDate = (date: string) => {
     return date.split("T")[0];
@@ -254,7 +262,8 @@ export function ReservationTable() {
                       {
                         label: "Registrar anticipo",
                         onClick: () => {
-                          console.log("Registrar anticipo", reservation.id);
+                          setSelectedReservationId(reservation.id);
+                          setOpenDepositDialog(true);
                         },
                       },
                       {
@@ -310,6 +319,20 @@ export function ReservationTable() {
         open={openCreateDialog}
         onClose={() => setOpenCreateDialog(false)}
       />
+
+      {selectedReservationId && (
+        <CreateReservationDeposit
+          open={openDepositDialog}
+          reservationId={selectedReservationId}
+          onSuccess={() => {
+            setRefreshReservations((prev) => prev + 1);
+          }}
+          onClose={() => {
+            setOpenDepositDialog(false);
+            setSelectedReservationId(null);
+          }}
+        />
+      )}
     </div>
   );
 }
