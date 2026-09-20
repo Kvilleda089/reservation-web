@@ -9,6 +9,7 @@ import { ActionsMenu } from "./action-menu";
 import { CreateReservationDialog } from "./dialog/create-reservation";
 import { CreateReservationDeposit } from "./dialog/reservation-deposit";
 import { GetReservationDetailsById, RESOURCE_LABELS } from "./dialog/get-reservation-by-id";
+import { PageLoading } from "@/src/components/loading/page-loading";
 
 export function ReservationTable() {
   const [reservations, setReservations] = useState<Reservation[]>([]);
@@ -98,7 +99,7 @@ export function ReservationTable() {
   };
 
   if (loading) {
-    return <p>Cargando Reservaciones...</p>;
+    return <PageLoading/>
   }
 
   return (
