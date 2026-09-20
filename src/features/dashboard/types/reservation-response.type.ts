@@ -43,3 +43,20 @@ export interface Pagination {
   totalRecords: number;
   lastPage: number;
 }
+
+export interface Deposit {
+  id: string;
+  reservationId: string;
+  amount: string;
+  createdAt: string;
+}
+ 
+export interface ReservationDetail extends Reservation {
+  deposits: Deposit[];
+}
+ 
+export interface ReservationDetailResponse {
+  statusCode: number;
+  message: string;
+  data: ReservationDetail;
+}

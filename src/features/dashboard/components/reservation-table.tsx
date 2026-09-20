@@ -8,6 +8,7 @@ import { ReservationStatus } from "./reservation-status";
 import { ActionsMenu } from "./action-menu";
 import { CreateReservationDialog } from "./dialog/create-reservation";
 import { CreateReservationDeposit } from "./dialog/reservation-deposit";
+import { GetReservationDetailsById, RESOURCE_LABELS } from "./dialog/get-reservation-by-id";
 
 export function ReservationTable() {
   const [reservations, setReservations] = useState<Reservation[]>([]);
@@ -32,6 +33,11 @@ export function ReservationTable() {
   const [selectedReservationId, setSelectedReservationId] = useState<
     string | null
   >(null);
+
+  //Dialogo detalles reservaciones
+  const [ openReservationDetails, setOpenReservationDetails] = useState(false)
+
+
 
   const [refreshReservations, setRefreshReservations] = useState(0);
 
@@ -224,7 +230,8 @@ export function ReservationTable() {
 
                 <td className="px-3 py-4 font-medium text-gray-900 lg:px-4">
                   <div className="truncate">
-                    {reservation.reservationResource}
+                    {RESOURCE_LABELS[reservation.reservationResource] ??
+                        reservation.reservationResource}
                   </div>
                 </td>
 
@@ -250,7 +257,8 @@ export function ReservationTable() {
                       {
                         label: "Ver reservación",
                         onClick: () => {
-                          console.log("Ver reservación", reservation.id);
+                          setSelectedReservationId(reservation.id);
+                          setOpenReservationDetails(true);
                         },
                       },
                       {
@@ -331,6 +339,18 @@ export function ReservationTable() {
             setOpenDepositDialog(false);
             setSelectedReservationId(null);
           }}
+        />
+      )}
+
+      {selectedReservationId && (
+        <GetReservationDetailsById
+            id={selectedReservationId}
+            open={openReservationDetails}
+            onClose={() =>{
+              setOpenReservationDetails(false);
+              setSelectedReservationId(null);
+            }}
+
         />
       )}
     </div>

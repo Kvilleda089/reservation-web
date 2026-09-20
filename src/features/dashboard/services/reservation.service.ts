@@ -1,5 +1,5 @@
 import api_reservation from "@/src/lib/axios/axios";
-import { ReservationResponse } from "../types/reservation-response.type";
+import { ReservationDetailResponse, ReservationResponse } from "../types/reservation-response.type";
 import { CreateReservationRequest } from "../types/reservation-request";
 import { CreateReservationDepositRequest } from "../types/reservation-deposit-request";
 
@@ -40,6 +40,17 @@ export const createReservationDeposit = async (
         "/reservation-deposit",
         data,
     )
+
+    return response.data;
+};
+
+
+export const getReservationById = async (
+    id: string,
+): Promise<ReservationDetailResponse> => {
+    const response = await api_reservation.get<ReservationDetailResponse>(
+        `/reservations/${id}`,   
+    );
 
     return response.data;
 }
