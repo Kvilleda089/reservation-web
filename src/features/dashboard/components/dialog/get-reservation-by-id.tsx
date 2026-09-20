@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 
 import { ReservationDetail } from "../../types/reservation-response.type";
 import { getReservationById } from "../../services/reservation.service";
+import { PageLoading } from "@/src/components/loading/page-loading";
 
 interface GetReservationDetailsProps {
   id: string;
@@ -136,9 +137,7 @@ export function GetReservationDetailsById({
           {/* Loading */}
           {loading && (
             <div className="flex min-h-[300px] items-center justify-center">
-              <p className="text-sm text-gray-500">
-                Cargando detalle de la reserva...
-              </p>
+                <PageLoading/>
             </div>
           )}
 

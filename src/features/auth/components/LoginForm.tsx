@@ -8,10 +8,14 @@ import { login } from "../services/auth.service";
 import { getApiErrorMessage } from "@/src/lib/errors/api-error";
 import { useAuth } from "../context/auth.context";
 import { can } from "@/src/lib/auth/helper/permissions.helper";
+import { Spinner } from "@/src/components/ui/spinner";
 
 export default function LoginForm() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+
+  //loading
+  const [isLoading, setIsLoading] = useState(false);
 
   //para manejo de errores variables
   const [error, setErrors] = useState({
@@ -44,6 +48,7 @@ export default function LoginForm() {
     }
 
     try {
+      setIsLoading(true);
       const response = await login({
         username,
         password,
@@ -120,9 +125,17 @@ export default function LoginForm() {
 
         <button
           type="submit"
-          className="mt-8 w-full rounded-lg bg-[#00D4C6] px-4 py-3 font-semibold text-slate-900 transition hover:bg-[#00b8ab] focus:outline-none focus:ring-2 focus:ring-[#00D4C6]/40"
+          disabled={isLoading}
+          className="mt-8 flex w-full items-center justify-center rounded-lg bg-[#00D4C6] px-4 py-3 font-semibold text-slate-900 transition hover:bg-[#00b8ab] focus:outline-none focus:ring-2 focus:ring-[#00D4C6]/40 disabled:cursor-not-allowed disabled:opacity-70"
         >
-          Iniciar sesión
+          {isLoading ? (
+            <>
+              <Spinner className="mr-2 h-5 w-5" />
+              Iniciando sesión...
+            </>
+          ) : (
+            "Iniciar sesión"
+          )}
         </button>
       </form>
     </div>
