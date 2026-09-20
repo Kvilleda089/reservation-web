@@ -1,9 +1,13 @@
 "use client";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { PERMISSIONS } from "@/src/constants/permissions";
 import { toast } from "sonner";
 import { LockKeyhole, UserRound } from "lucide-react";
 import { login } from "../services/auth.service";
 import { getApiErrorMessage } from "@/src/lib/errors/api-error";
+import { useAuth } from "../context/auth.context";
+import { can } from "@/src/lib/auth/helper/permissions.helper";
 
 export default function LoginForm() {
   const [username, setUsername] = useState("");
@@ -14,6 +18,8 @@ export default function LoginForm() {
     username: "",
     password: "",
   });
+  const router = useRouter();
+  const { setAuth } = useAuth();
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -42,11 +48,22 @@ export default function LoginForm() {
         username,
         password,
       });
-      const fullName = `${response.employee.firstName} ${response.employee.surname}`
-      toast.success(`Iniciso de sesión existoso. Bienvenido ${fullName}`)
+
+      const fullName = `${response.employee.firstName} ${response.employee.surname}`;
+      toast.success(`Iniciso de sesión existoso. Bienvenido ${fullName}`);
+      setAuth(response.accessToken, response.employee);
+
+      if (can(response.employee.role, PERMISSIONS.RESERVATIONS_READ)) {
+        router.replace("/dashboard");
+        return;
+      }
+
+      if (can(response.employee.role, PERMISSIONS.AGENDA_READ)) {
+        router.replace("/agenda");
+        return;
+      }
     } catch (error) {
-      toast.error(getApiErrorMessage(error))
-      
+      toast.error(getApiErrorMessage(error));
     }
   };
 

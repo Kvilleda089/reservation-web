@@ -1,3 +1,4 @@
+import { Role } from "@/src/constants/roles";
 
 
 
@@ -18,5 +19,5 @@ export interface EmployeeResponse {
     username: string;
     firstName: string;
     surname: string;
-    role: string;
+    role: Role;
 }
