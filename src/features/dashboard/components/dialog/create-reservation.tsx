@@ -3,11 +3,13 @@
 import { FormEvent, useState } from "react";
 import { toast } from "sonner";
 import { X } from "lucide-react";
-import { ReservationResourceEnum, StatusReservationEnum } from "../../types/reservation-request";
+import {
+  ReservationResourceEnum,
+  StatusReservationEnum,
+} from "../../types/reservation-request";
 import { createReservation } from "../../services/reservation.service";
 import { getApiErrorMessage } from "@/src/lib/errors/api-error";
-
-
+import { Spinner } from "@/src/components/ui/spinner";
 
 type ReservationStatus = "PENDIENTE" | "CONFIRMADA";
 
@@ -74,9 +76,7 @@ export function CreateReservationDialog({
     return null;
   }
 
-  const handleClientChange = (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
+  const handleClientChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
 
     setFormData((current) => ({
@@ -89,9 +89,7 @@ export function CreateReservationDialog({
   };
 
   const handleReservationChange = (
-    event: React.ChangeEvent<
-      HTMLInputElement | HTMLSelectElement
-    >,
+    event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
     const { name, value } = event.target;
 
@@ -107,9 +105,7 @@ export function CreateReservationDialog({
     }));
   };
 
-  const handleDepositChange = (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
+  const handleDepositChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setFormData((current) => ({
       ...current,
       depositAmount: Number(event.target.value),
@@ -121,7 +117,7 @@ export function CreateReservationDialog({
 
     try {
       setSubmitting(true);
-
+      
       const request = {
         client: {
           firstName: formData.client.firstName,
@@ -136,10 +132,9 @@ export function CreateReservationDialog({
         reservation: {
           hour: formData.reservation.hour,
           reservationDate: formData.reservation.reservationDate,
-          reservationResource:
-            formData.reservation.reservationResource as ReservationResourceEnum,
-          status:
-            formData.reservation.status as StatusReservationEnum,
+          reservationResource: formData.reservation
+            .reservationResource as ReservationResourceEnum,
+          status: formData.reservation.status as StatusReservationEnum,
           reservedHours: formData.reservation.reservedHours,
           totalReservation: formData.reservation.totalReservation,
         },
@@ -156,10 +151,12 @@ export function CreateReservationDialog({
       setFormData(initialFormData);
       onClose();
 
-      toast.success(`Se ha creado la reservación exitosamente.`)
+      toast.success(`Se ha creado la reservación exitosamente.`);
     } catch (error) {
       console.error("Error al crear la reservación:", error);
-      toast.error(`Error al crear la reservación Motivo: ${getApiErrorMessage(error)}`)
+      toast.error(
+        `Error al crear la reservación Motivo: ${getApiErrorMessage(error)}`,
+      );
     } finally {
       setSubmitting(false);
     }
@@ -168,7 +165,6 @@ export function CreateReservationDialog({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
       <div className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-xl bg-white shadow-xl">
-
         {/* Header */}
         <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
           <div>
@@ -191,11 +187,7 @@ export function CreateReservationDialog({
           </button>
         </div>
 
-        <form
-          onSubmit={handleSubmit}
-          className="space-y-8 px-6 py-6"
-        >
-
+        <form onSubmit={handleSubmit} className="space-y-8 px-6 py-6">
           {/* ============================= */}
           {/* CLIENTE */}
           {/* ============================= */}
@@ -212,8 +204,6 @@ export function CreateReservationDialog({
             </div>
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-
-          
               <div>
                 <label
                   htmlFor="firstName"
@@ -234,7 +224,6 @@ export function CreateReservationDialog({
                 />
               </div>
 
-            
               <div>
                 <label
                   htmlFor="middleName"
@@ -274,7 +263,6 @@ export function CreateReservationDialog({
                 />
               </div>
 
-             
               <div>
                 <label
                   htmlFor="secondSurname"
@@ -294,7 +282,6 @@ export function CreateReservationDialog({
                 />
               </div>
 
-              
               <div>
                 <label
                   htmlFor="email"
@@ -314,7 +301,6 @@ export function CreateReservationDialog({
                 />
               </div>
 
-            
               <div>
                 <label
                   htmlFor="phoneNumber"
@@ -334,7 +320,6 @@ export function CreateReservationDialog({
                 />
               </div>
 
-           
               <div>
                 <label
                   htmlFor="dateRegistration"
@@ -372,8 +357,6 @@ export function CreateReservationDialog({
             </div>
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-
-       
               <div>
                 <label
                   htmlFor="reservationDate"
@@ -393,7 +376,6 @@ export function CreateReservationDialog({
                 />
               </div>
 
-         
               <div>
                 <label
                   htmlFor="hour"
@@ -413,7 +395,6 @@ export function CreateReservationDialog({
                 />
               </div>
 
-             
               <div>
                 <label
                   htmlFor="reservationResource"
@@ -442,9 +423,7 @@ export function CreateReservationDialog({
                     Cancha 2
                   </option>
 
-                  <option value={ReservationResourceEnum.SALON}>
-                    Salón
-                  </option>
+                  <option value={ReservationResourceEnum.SALON}>Salón</option>
                 </select>
               </div>
 
@@ -490,7 +469,6 @@ export function CreateReservationDialog({
                 />
               </div>
 
-              
               <div>
                 <label
                   htmlFor="status"
@@ -507,18 +485,13 @@ export function CreateReservationDialog({
                   required
                   className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                 >
-                  <option value="PENDIENTE">
-                    Pendiente
-                  </option>
+                  <option value="PENDIENTE">Pendiente</option>
 
-                  <option value="CONFIRMADA">
-                    Confirmada
-                  </option>
+                  <option value="CONFIRMADA">Confirmada</option>
                 </select>
               </div>
             </div>
           </section>
-
 
           <section>
             <div className="mb-4">
@@ -527,8 +500,7 @@ export function CreateReservationDialog({
               </h3>
 
               <p className="text-sm text-gray-500">
-                Registra el anticipo recibido al momento de crear
-                la reserva.
+                Registra el anticipo recibido al momento de crear la reserva.
               </p>
             </div>
 
@@ -554,9 +526,7 @@ export function CreateReservationDialog({
             </div>
           </section>
 
-
           <div className="flex justify-end gap-3 border-t border-gray-200 pt-5">
-
             <button
               type="button"
               onClick={onClose}
@@ -569,13 +539,17 @@ export function CreateReservationDialog({
             <button
               type="submit"
               disabled={submitting}
-              className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex items-center justify-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {submitting
-                ? "Creando..."
-                : "Crear Reserva"}
+              {submitting ? (
+                <>
+                  <Spinner className="mr-2 h-4 w-4" />
+                  Creando...
+                </>
+              ) : (
+                "Crear Reserva"
+              )}
             </button>
-
           </div>
         </form>
       </div>
