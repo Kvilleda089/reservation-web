@@ -6,5 +6,9 @@ interface SpinnerProps {
 }
 
 export function Spinner({ className }: SpinnerProps) {
-  return <Loader2 className={cn("animation-spin", className)} />;
+  return (
+    <Loader2
+      className={cn("animate-spin", className)}
+    />
+  );
 }
