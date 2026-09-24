@@ -10,3 +10,11 @@ export const ROLES = {
 } as const;
 
 export type Role = (typeof ROLES)[keyof typeof ROLES]
+
+export const ROLES_LABELS: Record<string, string> = {
+    SUPER_ADMINISTRATOR: "Super Adminstrador",
+    ADMINISTRATOR: "Administrador",
+    COURT_MANAGER: "Responsable Cancha",
+    CLEANING_STAFF: "PERSONAL DE LIMPIEZA",
+    RECEPTIONIST: "Recepcionista",
+};

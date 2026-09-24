@@ -24,7 +24,7 @@ export function ReservationStatus({ status }: ReservationStatusProps) {
 
   return (
     <span
-      className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${statusStyle}`}
+      className={`inline-flex rounded-full px-3 py-1 text-sm font-medium ${statusStyle}`}
     >
       {statusLabel}
     </span>

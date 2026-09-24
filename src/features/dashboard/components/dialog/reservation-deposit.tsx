@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { X } from "lucide-react";
 import { createReservationDeposit } from "../../services/reservation.service";
 import { getApiErrorMessage } from "@/src/lib/errors/api-error";
+import { Spinner } from "@/src/components/ui/spinner";
 
 interface ReservationDepositProps {
   open: boolean;
@@ -61,71 +62,69 @@ export function CreateReservationDeposit({
   };
 
   return (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-            <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl">
-                <div className="mb-6 flex items-center justify-between">
-                    <h2 className="text-xl font-semibold">
-                        Registrar anticipo
-                    </h2>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+      <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl">
+        <div className="mb-6 flex items-center justify-between">
+          <h2 className="text-xl font-semibold">Registrar anticipo</h2>
 
-                    <button
-                        type="button"
-                        onClick={onClose}
-                        disabled={loading}
-                        className="rounded-md p-2 hover:bg-gray-100"
-                    >
-                        <X size={20} />
-                    </button>
-                </div>
-
-                <form onSubmit={handleSubmit} className="space-y-5">
-                    <div>
-                        <label
-                            htmlFor="amount"
-                            className="mb-2 block text-sm font-medium"
-                        >
-                            Monto del anticipo
-                        </label>
-
-                        <input
-                            id="amount"
-                            type="number"
-                            min="1"
-                            step="0.01"
-                            value={amount}
-                            onChange={(event) => setAmount(event.target.value)}
-                            placeholder="Ej. 400"
-                            disabled={loading}
-                            className="w-full rounded-md border px-3 py-2 outline-none focus:ring-2"
-                        />
-                    </div>
-
-                    {error && (
-                        <p className="text-sm text-red-500">
-                            {error}
-                        </p>
-                    )}
-
-                    <div className="flex justify-end gap-3">
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            disabled={loading}
-                            className="rounded-md border px-4 py-2"
-                        >
-                            Cancelar
-                        </button>
-
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className="rounded-md bg-black px-4 py-2 text-white disabled:opacity-50"
-                        >
-                            {loading ? "Registrando..." : "Registrar anticipo"}
-                        </button>
-                    </div>
-                </form>
-            </div>
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={loading}
+            className="rounded-md p-2 hover:bg-gray-100"
+          >
+            <X size={20} />
+          </button>
         </div>
+
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div>
+            <label htmlFor="amount" className="mb-2 block text-sm font-medium">
+              Monto del anticipo
+            </label>
+
+            <input
+              id="amount"
+              type="number"
+              min="1"
+              step="0.01"
+              value={amount}
+              onChange={(event) => setAmount(event.target.value)}
+              placeholder="Ej. 400"
+              disabled={loading}
+              className="w-full rounded-md border px-3 py-2 outline-none focus:ring-2"
+            />
+          </div>
+
+          {error && <p className="text-sm text-red-500">{error}</p>}
+
+          <div className="flex justify-end gap-3">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={loading}
+              className="rounded-md border px-4 py-2"
+            >
+              Cancelar
+            </button>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="flex items-center justify-center rounded-md bg-black px-4 py-2 text-white transition disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {loading ? (
+                <>
+                  <Spinner className="mr-2 h-4 w-4" />
+                  Registrando...
+                </>
+              ) : (
+                "Registrar anticipo"
+              )}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
   );
 }
