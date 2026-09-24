@@ -5,11 +5,12 @@ import { Reservation } from "../types/reservation-response.type";
 import { getReservation } from "../services/reservation.service";
 
 import { ReservationStatus } from "./reservation-status";
-import { ActionsMenu } from "./action-menu";
+import { ActionsMenu } from "../../../components/ui/action-menu";
 import { CreateReservationDialog } from "./dialog/create-reservation";
 import { CreateReservationDeposit } from "./dialog/reservation-deposit";
 import { GetReservationDetailsById, RESOURCE_LABELS } from "./dialog/get-reservation-by-id";
 import { PageLoading } from "@/src/components/loading/page-loading";
+import { Pagination } from "@/src/components/pagination/pagination";
 
 export function ReservationTable() {
   const [reservations, setReservations] = useState<Reservation[]>([]);
@@ -300,29 +301,12 @@ export function ReservationTable() {
       </div>
 
       {/* Paginación */}
-      <div className="flex items-center justify-between border-t border-gray-200 px-4 py-3">
-        <button
-          type="button"
-          disabled={page === 1}
-          onClick={() => setPage((prev) => prev - 1)}
-          className="rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          Anterior
-        </button>
-
-        <span className="text-sm text-gray-600">
-          Página {page} de {totalPage}
-        </span>
-
-        <button
-          type="button"
-          disabled={page === totalPage}
-          onClick={() => setPage((prev) => prev + 1)}
-          className="rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          Siguiente
-        </button>
-      </div>
+      <Pagination
+        page={page}
+        totalPage={totalPage}
+        onPageChange={setPage}
+        />
+         
 
       <CreateReservationDialog
         open={openCreateDialog}
