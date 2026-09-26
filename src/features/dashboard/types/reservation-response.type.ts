@@ -1,3 +1,4 @@
+import { Pagination } from "@/src/types/pagination";
 import { ReservationStatus } from "./reservation.type";
 
 
@@ -37,12 +38,7 @@ export interface Client {
   updatedAt: string;
 }
 
-export interface Pagination {
-  page: number;
-  limit: number;
-  totalRecords: number;
-  lastPage: number;
-}
+
 
 export interface Deposit {
   id: string;

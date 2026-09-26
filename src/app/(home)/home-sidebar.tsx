@@ -5,6 +5,7 @@ import {
     CalendarCheck,
     CalendarDays,
     Users,
+    UserCog,
 } from "lucide-react";
 
 import { Employee } from "./types/employee.interface";
@@ -71,8 +72,18 @@ export default function HomeSidebar() {
                             href="/employee"
                             className="flex items-center gap-3"
                         >
-                            <Users size={20} />
+                            <UserCog size={20} />
                             Empleados
+                        </a>
+                    </li>
+
+                    <li>
+                        <a
+                            href="/client"
+                            className="flex items-center gap-3"
+                        >
+                            <Users size={20} />
+                            Clientes
                         </a>
                     </li>
                 </ul>

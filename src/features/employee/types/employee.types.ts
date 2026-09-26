@@ -1,4 +1,5 @@
 import { Role } from "@/src/constants/roles";
+import { Pagination } from "@/src/types/pagination";
 
 
 
@@ -37,18 +38,12 @@ export interface Employee {
   updatedAt: string;
 }
 
-export type EmployeePagination = {
-  page: number;
-  limit: number;
-  totalRecords: number;
-  lastPage: number;
-};
 
 export interface EmployeeListResponse {
   statusCode: number;
   data: Employee[];
   message: string;
-  pagination: EmployeePagination;
+  pagination: Pagination;
 }
 
 
