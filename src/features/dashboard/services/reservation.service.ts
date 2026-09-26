@@ -1,5 +1,5 @@
 import api_reservation from "@/src/lib/axios/axios";
-import { ReservationDetailResponse, ReservationResponse } from "../types/reservation-response.type";
+import { ReservationDetailResponse, ReservationResponse, UpdateReservation } from "../types/reservation-response.type";
 import { CreateReservationRequest } from "../types/reservation-request";
 import { CreateReservationDepositRequest } from "../types/reservation-deposit-request";
 
@@ -53,4 +53,18 @@ export const getReservationById = async (
     );
 
     return response.data;
-}
+};
+
+export const updateReservationId = async (
+    id: string, 
+    dataUpdate: UpdateReservation,
+): Promise<ReservationDetailResponse> => {
+
+    const response = await api_reservation.patch<ReservationDetailResponse>(
+        `/reservations/${id}`,
+        dataUpdate,
+    );
+    
+    return response.data
+
+};

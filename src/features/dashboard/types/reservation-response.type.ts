@@ -55,4 +55,13 @@ export interface ReservationDetailResponse {
   statusCode: number;
   message: string;
   data: ReservationDetail;
+}; 
+
+export interface UpdateReservation {
+  reservationDate?: string;
+  hour?: string;
+  status?: ReservationStatus;
+  reservationResource?: string;
+  reservedHours?: number;
+  totalReservation?: number;
 }

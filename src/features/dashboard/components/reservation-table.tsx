@@ -8,9 +8,13 @@ import { ReservationStatus } from "./reservation-status";
 import { ActionsMenu } from "../../../components/ui/action-menu";
 import { CreateReservationDialog } from "./dialog/create-reservation";
 import { CreateReservationDeposit } from "./dialog/reservation-deposit";
-import { GetReservationDetailsById, RESOURCE_LABELS } from "./dialog/get-reservation-by-id";
+import {
+  GetReservationDetailsById,
+  RESOURCE_LABELS,
+} from "./dialog/get-reservation-by-id";
 import { PageLoading } from "@/src/components/loading/page-loading";
 import { Pagination } from "@/src/components/pagination/pagination";
+import { EditReservationDialog } from "./dialog/edit-reservation";
 
 export function ReservationTable() {
   const [reservations, setReservations] = useState<Reservation[]>([]);
@@ -37,9 +41,10 @@ export function ReservationTable() {
   >(null);
 
   //Dialogo detalles reservaciones
-  const [ openReservationDetails, setOpenReservationDetails] = useState(false)
+  const [openReservationDetails, setOpenReservationDetails] = useState(false);
 
-
+  //Dialog edicion reservaciones
+  const [openEditDialog, setOpenEditDialog] = useState(false);
 
   const [refreshReservations, setRefreshReservations] = useState(0);
 
@@ -100,7 +105,7 @@ export function ReservationTable() {
   };
 
   if (loading) {
-    return <PageLoading/>
+    return <PageLoading />;
   }
 
   return (
@@ -233,7 +238,7 @@ export function ReservationTable() {
                 <td className="px-3 py-4 font-medium text-gray-900 lg:px-4">
                   <div className="truncate">
                     {RESOURCE_LABELS[reservation.reservationResource] ??
-                        reservation.reservationResource}
+                      reservation.reservationResource}
                   </div>
                 </td>
 
@@ -266,7 +271,8 @@ export function ReservationTable() {
                       {
                         label: "Editar",
                         onClick: () => {
-                          console.log("Editar", reservation.id);
+                          setSelectedReservationId(reservation.id);
+                          setOpenEditDialog(true);
                         },
                       },
                       {
@@ -301,12 +307,7 @@ export function ReservationTable() {
       </div>
 
       {/* Paginación */}
-      <Pagination
-        page={page}
-        totalPage={totalPage}
-        onPageChange={setPage}
-        />
-         
+      <Pagination page={page} totalPage={totalPage} onPageChange={setPage} />
 
       <CreateReservationDialog
         open={openCreateDialog}
@@ -329,13 +330,26 @@ export function ReservationTable() {
 
       {selectedReservationId && (
         <GetReservationDetailsById
-            id={selectedReservationId}
-            open={openReservationDetails}
-            onClose={() =>{
-              setOpenReservationDetails(false);
-              setSelectedReservationId(null);
-            }}
+          id={selectedReservationId}
+          open={openReservationDetails}
+          onClose={() => {
+            setOpenReservationDetails(false);
+            setSelectedReservationId(null);
+          }}
+        />
+      )}
 
+      {selectedReservationId && (
+        <EditReservationDialog
+          open={openEditDialog}
+          reservationId={selectedReservationId}
+          onSuccess={() => {
+            setRefreshReservations((prev) => prev + 1);
+          }}
+          onClose={() => {
+            setOpenEditDialog(false);
+            setSelectedReservationId(null);
+          }}
         />
       )}
     </div>
