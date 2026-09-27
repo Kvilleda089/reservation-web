@@ -9,6 +9,7 @@ import {
     UserCog,
     Menu,
     X,
+    BarChart3,
 } from "lucide-react";
 
 import { Employee } from "./types/employee.interface";
@@ -152,6 +153,17 @@ export default function HomeSidebar() {
                             >
                                 <Users size={20} />
                                 <span>Clientes</span>
+                            </Link>
+                        </li>
+
+                        <li>
+                            <Link
+                                href="/statistics"
+                                onClick={closeSidebar}
+                                className="flex items-center gap-3 rounded-md px-3 py-2 hover:bg-gray-100"
+                            >
+                                <BarChart3 size={20} />
+                                <span>Estadísticas</span>
                             </Link>
                         </li>
                     </ul>
