@@ -7,7 +7,7 @@ import { ClientTable } from "@/src/features/clients/components/client-table";
 
 export default function DashboardPage() {
   return (
-    <ProtectedRoute permission="reservations.read">
+    <ProtectedRoute permission="clients.read">
       <main>
           <ClientTable/>
       </main>

@@ -10,6 +10,17 @@ export const PERMISSIONS = {
     RESERVATIONS_CANCEL: "reservations.cancel",
 
     AGENDA_READ: "agenda.read",
+
+    CLIENTS_READ: "clients.read",
+    CLIENTS_CREATE: "clients.create",
+    CLIENTS_UPDATE: "clients.update",
+
+    EMPLOYEESS_READ: "employeess.read",
+    EMPLOYEESS_CREATE: "employeess.create",
+    EMPLOYEESS_UPDATE: "employeess.update",
+
+    STATISTICS_READ: "statistics.read",
+    
 } as const;
 
 export type Permission =
@@ -22,7 +33,19 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
         PERMISSIONS.RESERVATIONS_CREATE,
         PERMISSIONS.RESERVATIONS_UPDATE,
         PERMISSIONS.RESERVATIONS_CANCEL,
+
         PERMISSIONS.AGENDA_READ,
+
+        PERMISSIONS.CLIENTS_READ,
+        PERMISSIONS.CLIENTS_CREATE,
+        PERMISSIONS.CLIENTS_UPDATE,
+
+        PERMISSIONS.EMPLOYEESS_CREATE,
+        PERMISSIONS.EMPLOYEESS_READ,
+        PERMISSIONS.EMPLOYEESS_UPDATE,
+
+        PERMISSIONS.STATISTICS_READ,
+
     ],
 
     [ROLES.ADMINISTRATOR]: [
