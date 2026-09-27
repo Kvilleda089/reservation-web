@@ -12,3 +12,13 @@ export interface ClientListResponse {
     message: string;
     pagination: Pagination;
 };
+
+
+export interface ClienteRequest {
+    firstName?: string;
+    surName?: string;
+    email?: string;
+    phoneNumber?: string;
+    page?: number;
+    limit?: number;
+}
