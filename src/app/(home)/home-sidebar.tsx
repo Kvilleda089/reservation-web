@@ -1,11 +1,14 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import Link from "next/link";
 import {
     CalendarCheck,
     CalendarDays,
     Users,
     UserCog,
+    Menu,
+    X,
 } from "lucide-react";
 
 import { Employee } from "./types/employee.interface";
@@ -13,6 +16,7 @@ import { ROLES_LABELS } from "@/src/constants/roles";
 
 export default function HomeSidebar() {
     const [employee, setEmployee] = useState<Employee | null>(null);
+    const [isOpen, setIsOpen] = useState(false);
 
     useEffect(() => {
         const storedEmployee = localStorage.getItem(
@@ -33,84 +37,150 @@ export default function HomeSidebar() {
         }
     }, []);
 
-    return (
-        <aside className="flex min-h-screen w-64 flex-col border-r">
-            <div className="p-4">
-                <h1 className="text-xl font-bold">
-                    ReservaFácil
-                </h1>
+    const closeSidebar = () => {
+        setIsOpen(false);
+    };
 
-                <p className="text-sm">
-                    Panel de Administración
-                </p>
+    return (
+        <>
+            {/* Mobile header */}
+            <div className="fixed left-0 right-0 top-0 z-40 flex h-16 items-center border-b bg-white px-4 md:hidden">
+                <button
+                    type="button"
+                    onClick={() => setIsOpen(true)}
+                    className="rounded-md p-2 hover:bg-gray-100"
+                    aria-label="Abrir menú"
+                >
+                    <Menu size={24} />
+                </button>
+
+                <div className="ml-3">
+                    <h1 className="text-lg font-bold">
+                        ReservaFácil
+                    </h1>
+
+                    <p className="text-xs text-gray-500">
+                        Panel de Administración
+                    </p>
+                </div>
             </div>
 
-            <nav className="p-4">
-                <ul className="space-y-2">
-                    <li>
-                        <a
-                            href="/dashboard"
-                            className="flex items-center gap-3"
-                        >
-                            <CalendarCheck size={20} />
-                            Reservaciones
-                        </a>
-                    </li>
+            {/* Mobile overlay */}
+            {isOpen && (
+                <button
+                    type="button"
+                    aria-label="Cerrar menú"
+                    onClick={closeSidebar}
+                    className="fixed inset-0 z-40 bg-black/40 md:hidden"
+                />
+            )}
 
-                    <li>
-                        <a
-                            href="/agenda"
-                            className="flex items-center gap-3"
-                        >
-                            <CalendarDays size={20} />
-                            Agenda
-                        </a>
-                    </li>
+            {/* Sidebar */}
+            <aside
+                className={`
+                    fixed left-0 top-0 z-50 flex min-h-screen w-64
+                    flex-col border-r bg-white
+                    transition-transform duration-200
+                    md:static md:z-auto md:translate-x-0
+                    ${isOpen ? "translate-x-0" : "-translate-x-full"}
+                `}
+            >
+                {/* Header */}
+                <div className="flex items-start justify-between p-4">
+                    <div>
+                        <h1 className="text-xl font-bold">
+                            ReservaFácil
+                        </h1>
 
-                    <li>
-                        <a
-                            href="/employee"
-                            className="flex items-center gap-3"
-                        >
-                            <UserCog size={20} />
-                            Empleados
-                        </a>
-                    </li>
+                        <p className="text-sm text-gray-500">
+                            Panel de Administración
+                        </p>
+                    </div>
 
-                    <li>
-                        <a
-                            href="/client"
-                            className="flex items-center gap-3"
-                        >
-                            <Users size={20} />
-                            Clientes
-                        </a>
-                    </li>
-                </ul>
-            </nav>
+                    {/* Close button - mobile only */}
+                    <button
+                        type="button"
+                        onClick={closeSidebar}
+                        className="rounded-md p-1 hover:bg-gray-100 md:hidden"
+                        aria-label="Cerrar menú"
+                    >
+                        <X size={22} />
+                    </button>
+                </div>
 
-            {employee && (
-                <div className="mt-auto border-t p-4">
-                    <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-200 font-semibold">
-                            {employee.firstName.charAt(0)}
-                            {employee.surname.charAt(0)}
-                        </div>
+                {/* Navigation */}
+                <nav className="p-4">
+                    <ul className="space-y-2">
+                        <li>
+                            <Link
+                                href="/dashboard"
+                                onClick={closeSidebar}
+                                className="flex items-center gap-3 rounded-md px-3 py-2 hover:bg-gray-100"
+                            >
+                                <CalendarCheck size={20} />
+                                <span>Reservaciones</span>
+                            </Link>
+                        </li>
 
-                        <div className="min-w-0">
-                            <p className="truncate text-sm font-medium">
-                                {employee.firstName}{" "}
-                                {employee.surname}
-                            </p>
+                        <li>
+                            <Link
+                                href="/agenda"
+                                onClick={closeSidebar}
+                                className="flex items-center gap-3 rounded-md px-3 py-2 hover:bg-gray-100"
+                            >
+                                <CalendarDays size={20} />
+                                <span>Agenda</span>
+                            </Link>
+                        </li>
 
-                            <p className="truncate text-xs text-gray-500">
-                                {ROLES_LABELS[employee.role] ??
-                                    employee.role}
-                            </p>
+                        <li>
+                            <Link
+                                href="/employee"
+                                onClick={closeSidebar}
+                                className="flex items-center gap-3 rounded-md px-3 py-2 hover:bg-gray-100"
+                            >
+                                <UserCog size={20} />
+                                <span>Empleados</span>
+                            </Link>
+                        </li>
+
+                        <li>
+                            <Link
+                                href="/client"
+                                onClick={closeSidebar}
+                                className="flex items-center gap-3 rounded-md px-3 py-2 hover:bg-gray-100"
+                            >
+                                <Users size={20} />
+                                <span>Clientes</span>
+                            </Link>
+                        </li>
+                    </ul>
+                </nav>
+
+                {/* Employee */}
+                {employee && (
+                    <div className="mt-auto border-t p-4">
+                        <div className="flex items-center gap-3">
+                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-200 font-semibold">
+                                {employee.firstName.charAt(0)}
+                                {employee.surname.charAt(0)}
+                            </div>
+
+                            <div className="min-w-0">
+                                <p className="truncate text-sm font-medium">
+                                    {employee.firstName}{" "}
+                                    {employee.surname}
+                                </p>
+
+                                <p className="truncate text-xs text-gray-500">
+                                    {ROLES_LABELS[employee.role] ??
+                                        employee.role}
+                                </p>
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
-        </aside>
+                )}
+            </aside>
+        </>
     );
 }

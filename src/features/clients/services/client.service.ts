@@ -1,5 +1,5 @@
 import { ReservationResponse } from "../../dashboard/types/reservation-response.type";
-import { ClientListResponse } from "../types/client.type";
+import { ClienteRequest, ClientListResponse } from "../types/client.type";
 import api_reservation from "@/src/lib/axios/axios";
 
 
@@ -35,5 +35,19 @@ export const getHistoryReservationClientId = async (
     );
 
     return response.data;
-}
+};
 
+
+export const getOneClient = async (
+    request: ClienteRequest
+): Promise<ClientListResponse> => {
+
+    const response = await api_reservation.get<ClientListResponse>(
+        "/clients/one",
+        {
+            params: request,
+        }
+    );
+
+    return response.data;
+};
