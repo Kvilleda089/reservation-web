@@ -15,9 +15,9 @@ export const PERMISSIONS = {
     CLIENTS_CREATE: "clients.create",
     CLIENTS_UPDATE: "clients.update",
 
-    EMPLOYEESS_READ: "employeess.read",
-    EMPLOYEESS_CREATE: "employeess.create",
-    EMPLOYEESS_UPDATE: "employeess.update",
+    EMPLOYEES_READ: "employees.read",
+    EMPLOYEES_CREATE: "employees.create",
+    EMPLOYEES_UPDATE: "employees.update",
 
     STATISTICS_READ: "statistics.read",
     
@@ -40,9 +40,9 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
         PERMISSIONS.CLIENTS_CREATE,
         PERMISSIONS.CLIENTS_UPDATE,
 
-        PERMISSIONS.EMPLOYEESS_CREATE,
-        PERMISSIONS.EMPLOYEESS_READ,
-        PERMISSIONS.EMPLOYEESS_UPDATE,
+        PERMISSIONS.EMPLOYEES_CREATE,
+        PERMISSIONS.EMPLOYEES_READ,
+        PERMISSIONS.EMPLOYEES_UPDATE,
 
         PERMISSIONS.STATISTICS_READ,
 

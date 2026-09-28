@@ -42,7 +42,7 @@ const MENU_ITEMS: MenuItem[] = [
         label: "Empleados",
         href: "/employee",
         icon: UserCog,
-        permission: "employeess.read",
+        permission: "employees.read",
     },
     {
         label: "Clientes",

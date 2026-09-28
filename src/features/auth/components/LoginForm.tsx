@@ -1,14 +1,13 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { PERMISSIONS } from "@/src/constants/permissions";
 import { toast } from "sonner";
 import { LockKeyhole, UserRound } from "lucide-react";
 import { login } from "../services/auth.service";
 import { getApiErrorMessage } from "@/src/lib/errors/api-error";
 import { useAuth } from "../context/auth.context";
-import { can } from "@/src/lib/auth/helper/permissions.helper";
 import { Spinner } from "@/src/components/ui/spinner";
+import { getDefaultRoute } from "@/src/lib/auth/helper/permissions.helper";
 
 export default function LoginForm() {
   const [username, setUsername] = useState("");
@@ -58,17 +57,18 @@ export default function LoginForm() {
       toast.success(`Iniciso de sesión existoso. Bienvenido ${fullName}`);
       setAuth(response.accessToken, response.employee);
 
-      if (can(response.employee.role, PERMISSIONS.RESERVATIONS_READ)) {
-        router.replace("/dashboard");
+      const defaultRoute = getDefaultRoute(response.employee.role);
+
+      if (defaultRoute) {
+        router.replace(defaultRoute);
         return;
       }
 
-      if (can(response.employee.role, PERMISSIONS.AGENDA_READ)) {
-        router.replace("/agenda");
-        return;
-      }
+      toast.error("Tu usuario no tiene acceso a ninguna sección del sistema.");
     } catch (error) {
       toast.error(getApiErrorMessage(error));
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -87,7 +87,7 @@ export default function LoginForm() {
           </label>
 
           <div className="relative">
-            <UserRound className="absolute left-4 top-1/2 h-5 w-5 -traslate-y-1/2 text-salte-400" />
+            <UserRound className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
             <input
               id="username"
               name="username"
@@ -108,7 +108,7 @@ export default function LoginForm() {
           </label>
 
           <div className="relative">
-            <LockKeyhole className="absolute left-4 top-1/2 h-5 w-5 -traslate-y-1/2 text-salte-400" />
+            <LockKeyhole className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
             <input
               type="password"
               id="password"

@@ -4,7 +4,7 @@ import { EmployeeTable } from "@/src/features/employee/components/employee-table
 
 export default function AgendaPage() {
   return (
-<ProtectedRoute permission="employeess.read">
+<ProtectedRoute permission="employees.read">
   <main>
     <EmployeeTable/>
   </main>

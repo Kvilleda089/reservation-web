@@ -1,6 +1,4 @@
 import axios from "axios";
-import { error } from "console";
-
 
 
 const api_reservation = axios.create({
@@ -13,7 +11,7 @@ api_reservation.interceptors.request.use(
         const token = localStorage.getItem("reservation_access_token");
         
         if(token){
-            config.headers.Authorization = ` Bearer ${token}`;
+            config.headers.Authorization = `Bearer ${token}`;
         }
         return config;
     }, 

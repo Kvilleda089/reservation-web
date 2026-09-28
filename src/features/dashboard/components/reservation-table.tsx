@@ -26,8 +26,23 @@ import { Pagination } from "@/src/components/pagination/pagination";
 import { EditReservationDialog } from "./dialog/edit-reservation";
 import { getApiErrorMessage } from "@/src/lib/errors/api-error";
 import { toast } from "sonner";
+import { useAuth } from "@/src/features/auth/context/auth.context";
+import { can } from "@/src/lib/auth/helper/permissions.helper";
+import { PERMISSIONS } from "@/src/constants/permissions";
 
 export function ReservationTable() {
+
+  //validación permisos: 
+  const { employee } = useAuth();
+
+  const canCreate =
+    !!employee && can(employee.role, PERMISSIONS.RESERVATIONS_CREATE);
+  const canUpdate =
+    !!employee && can(employee.role, PERMISSIONS.RESERVATIONS_UPDATE);
+  const canCancel =
+    !!employee && can(employee.role, PERMISSIONS.RESERVATIONS_CANCEL);
+
+
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -104,19 +119,19 @@ export function ReservationTable() {
     }));
   };
 
-  const handleSearch = () => {
-    const appliedFilters = Object.fromEntries(
-      Object.entries(filters).filter(([, value]) => value.trim() !== ""),
-    );
+const handleSearch = () => {
+  const nextFilters = Object.fromEntries(
+    Object.entries(filters).filter(([, value]) => value.trim() !== ""),
+  );
 
-    setPage(1);
+  setPage(1);
 
-    setAppliedFilters(
-      Object.keys(appliedFilters).length > 0
-        ? (appliedFilters as typeof filters)
-        : undefined,
-    );
-  };
+  setAppliedFilters(
+    Object.keys(nextFilters).length > 0
+      ? (nextFilters as typeof filters)
+      : undefined,
+  );
+};
 
   /**
    * Limpiar filtros.
@@ -262,14 +277,16 @@ export function ReservationTable() {
 
       {/* Crear reservación */}
       <div className="my-4 flex justify-end px-4">
-        <button
-          type="button"
-          onClick={() => setOpenCreateDialog(true)}
-          className="flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 font-medium text-white transition hover:bg-blue-700"
-        >
-          <Plus size={18} />
-          Crear Nueva Reserva
-        </button>
+          {canCreate && (
+            <button
+              type="button"
+              onClick={() => setOpenCreateDialog(true)}
+              className="flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 font-medium text-white transition hover:bg-blue-700"
+            >
+              <Plus size={18} />
+              Crear Nueva Reserva
+            </button>
+          )}
       </div>
 
       {/* Tabla */}
@@ -357,7 +374,7 @@ export function ReservationTable() {
 
                 {/* Acciones */}
                 <td className="px-2 py-4 text-center">
-                  <ActionsMenu
+                 <ActionsMenu
                     items={[
                       {
                         label: "Ver reservación",
@@ -366,25 +383,33 @@ export function ReservationTable() {
                           setOpenReservationDetails(true);
                         },
                       },
-                      {
-                        label: "Editar",
-                        onClick: () => {
-                          setSelectedReservationId(reservation.id);
-                          setOpenEditDialog(true);
-                        },
-                      },
-                      {
-                        label: "Registrar anticipo",
-                        onClick: () => {
-                          setSelectedReservationId(reservation.id);
-                          setOpenDepositDialog(true);
-                        },
-                      },
-                      {
-                        label: "Cancelar reservación",
-                        danger: true,
-                        onClick: () => handleCancelReservation(reservation.id),
-                      },
+                      ...(canUpdate
+                        ? [
+                            {
+                              label: "Editar",
+                              onClick: () => {
+                                setSelectedReservationId(reservation.id);
+                                setOpenEditDialog(true);
+                              },
+                            },
+                            {
+                              label: "Registrar anticipo",
+                              onClick: () => {
+                                setSelectedReservationId(reservation.id);
+                                setOpenDepositDialog(true);
+                              },
+                            },
+                          ]
+                        : []),
+                      ...(canCancel
+                        ? [
+                            {
+                              label: "Cancelar reservación",
+                              danger: true,
+                              onClick: () => handleCancelReservation(reservation.id),
+                            },
+                          ]
+                        : []),
                     ]}
                   />
                 </td>
@@ -410,6 +435,9 @@ export function ReservationTable() {
       <CreateReservationDialog
         open={openCreateDialog}
         onClose={() => setOpenCreateDialog(false)}
+        onSuccess={() => {
+            setRefreshReservations((prev) => prev + 1);
+          }}
       />
 
       {/* Registrar depósito */}

@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 import { useAuth } from "@/src/features/auth/context/auth.context";
@@ -20,12 +21,14 @@ export const ProtectedRoute = ({
 
     const { employee, isInitialized } = useAuth();
 
-    if (!isInitialized) {
-        return null;
-    }
+    // Las redirecciones son efectos secundarios: nunca deben hacerse durante el render.
+    useEffect(() => {
+        if (isInitialized && !employee) {
+            router.replace("/login");
+        }
+    }, [isInitialized, employee, router]);
 
-    if (!employee) {
-        router.replace("/login");
+    if (!isInitialized || !employee) {
         return null;
     }
 

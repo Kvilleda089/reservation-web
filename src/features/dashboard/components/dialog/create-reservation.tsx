@@ -16,6 +16,7 @@ type ReservationStatus = "PENDIENTE" | "CONFIRMADA";
 interface CreateReservationDialogProps {
   open: boolean;
   onClose: () => void;
+  onSuccess: () => void;
 }
 
 interface FormData {
@@ -67,6 +68,7 @@ const initialFormData: FormData = {
 export function CreateReservationDialog({
   open,
   onClose,
+  onSuccess
 }: CreateReservationDialogProps) {
   const [formData, setFormData] = useState<FormData>(initialFormData);
 
@@ -150,6 +152,7 @@ export function CreateReservationDialog({
 
       setFormData(initialFormData);
       onClose();
+      onSuccess();
 
       toast.success(`Se ha creado la reservación exitosamente.`);
     } catch (error) {
