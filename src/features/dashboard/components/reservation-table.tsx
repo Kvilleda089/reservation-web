@@ -1,17 +1,26 @@
+"use client";
+
 import { useEffect, useState } from "react";
+
 import { Plus } from "lucide-react";
 
 import { Reservation } from "../types/reservation-response.type";
-import { getReservation, updateReservationId } from "../services/reservation.service";
+
+import {
+  getReservation,
+  updateReservationId,
+} from "../services/reservation.service";
 
 import { ReservationStatus } from "./reservation-status";
 import { ActionsMenu } from "../../../components/ui/action-menu";
 import { CreateReservationDialog } from "./dialog/create-reservation";
 import { CreateReservationDeposit } from "./dialog/reservation-deposit";
+
 import {
   GetReservationDetailsById,
   RESOURCE_LABELS,
 } from "./dialog/get-reservation-by-id";
+
 import { PageLoading } from "@/src/components/loading/page-loading";
 import { Pagination } from "@/src/components/pagination/pagination";
 import { EditReservationDialog } from "./dialog/edit-reservation";
@@ -28,24 +37,29 @@ export function ReservationTable() {
 
   const [filters, setFilters] = useState({
     date: "",
-    cliente: "",
+    client: "",
     hour: "",
     status: "",
   });
 
-  //Open Dialogo
+  const [appliedFilters, setAppliedFilters] = useState<
+    typeof filters | undefined
+  >(undefined);
+
+  // Dialog crear reservación
   const [openCreateDialog, setOpenCreateDialog] = useState(false);
 
-  //Dialogo deposito
+  // Dialog depósito
   const [openDepositDialog, setOpenDepositDialog] = useState(false);
+
   const [selectedReservationId, setSelectedReservationId] = useState<
     string | null
   >(null);
 
-  //Dialogo detalles reservaciones
+  // Dialog detalles
   const [openReservationDetails, setOpenReservationDetails] = useState(false);
 
-  //Dialog edicion reservaciones
+  // Dialog edición
   const [openEditDialog, setOpenEditDialog] = useState(false);
 
   const [refreshReservations, setRefreshReservations] = useState(0);
@@ -55,84 +69,100 @@ export function ReservationTable() {
       try {
         setLoading(true);
 
-        const response = await getReservation(page, limit);
+        const response = await getReservation(page, limit, appliedFilters);
 
         setReservations(response.data);
+
         setTotalPage(Math.ceil(response.pagination.totalRecords / limit));
       } catch (error) {
-        console.error("Error al obtener reservaciones: ", error);
+        console.error("Error al obtener reservaciones:", error);
+
+        toast.error(
+          `No se pudieron obtener las reservaciones: ${getApiErrorMessage(error)}`,
+        );
       } finally {
         setLoading(false);
       }
     };
 
     fetchReservations();
-  }, [page, limit, refreshReservations]);
+  }, [page, limit, appliedFilters, refreshReservations]);
+
 
   const formatDate = (date: string) => {
     return date.split("T")[0];
   };
 
-  const handleCancelReservation = (reservationId: string) => {
-  toast("¿Está seguro que desea cancelar la reservación?", {
-    action: {
-      label: "Sí, cancelar",
-      onClick: async () => {
-        try {
-          await updateReservationId(reservationId, {
-            status: "CANCELADA",
-          });
-
-          toast.success("Reservación cancelada correctamente");
-
-          setRefreshReservations((prev) => prev + 1);
-        } catch (error) {
-          console.error("Error cancelando reservación:", error);
-
-          toast.error(
-            `No se pudo cancelar la reservación, motivo: ${getApiErrorMessage(error)}`
-          );
-        }
-      },
-    },
-    cancel: {
-      label: "No, regresar",
-      onClick: () => {},
-    },
-  });
-};
-
   const formatHour = (date: string) => {
     return date.split("T")[1].substring(0, 5);
   };
-
-  const filteredReservations = reservations.filter((reservation) => {
-    const reservationDate = formatDate(reservation.reservationDate);
-    const reservationHour = formatHour(reservation.hour);
-
-    const clientName =
-      `${reservation.client.firstName} ${reservation.client.surname} ${reservation.client.secondSurname}`
-        .toLowerCase()
-        .trim();
-
-    const matchesDate = !filters.date || reservationDate === filters.date;
-
-    const matchesClient =
-      !filters.cliente || clientName.includes(filters.cliente.toLowerCase());
-
-    const matchesHour = !filters.hour || reservationHour === filters.hour;
-
-    const matchesStatus =
-      !filters.status || reservation.status === filters.status;
-
-    return matchesDate && matchesClient && matchesHour && matchesStatus;
-  });
 
   const handleFilterChange = (field: keyof typeof filters, value: string) => {
     setFilters((prev) => ({
       ...prev,
       [field]: value,
     }));
+  };
+
+  const handleSearch = () => {
+    const appliedFilters = Object.fromEntries(
+      Object.entries(filters).filter(([, value]) => value.trim() !== ""),
+    );
+
+    setPage(1);
+
+    setAppliedFilters(
+      Object.keys(appliedFilters).length > 0
+        ? (appliedFilters as typeof filters)
+        : undefined,
+    );
+  };
+
+  /**
+   * Limpiar filtros.
+   */
+  const handleClearFilters = () => {
+    const emptyFilters = {
+      date: "",
+      client: "",
+      hour: "",
+      status: "",
+    };
+
+    setFilters(emptyFilters);
+    setAppliedFilters(undefined);
+    setPage(1);
+  };
+
+  const handleCancelReservation = (reservationId: string) => {
+    toast("¿Está seguro que desea cancelar la reservación?", {
+      action: {
+        label: "Sí, cancelar",
+
+        onClick: async () => {
+          try {
+            await updateReservationId(reservationId, {
+              status: "CANCELADA",
+            });
+
+            toast.success("Reservación cancelada correctamente");
+
+            setRefreshReservations((prev) => prev + 1);
+          } catch (error) {
+            console.error("Error cancelando reservación:", error);
+
+            toast.error(
+              `No se pudo cancelar la reservación, motivo: ${getApiErrorMessage(error)}`,
+            );
+          }
+        },
+      },
+
+      cancel: {
+        label: "No, regresar",
+        onClick: () => {},
+      },
+    });
   };
 
   if (loading) {
@@ -143,6 +173,7 @@ export function ReservationTable() {
     <div className="w-full overflow-visible rounded-xl border border-gray-200 bg-white shadow-sm">
       {/* Filtros */}
       <div className="grid grid-cols-1 gap-4 border-b border-gray-200 p-4 md:grid-cols-2 lg:grid-cols-4">
+        {/* Fecha */}
         <div>
           <label className="mb-1 block text-sm font-medium text-gray-700">
             Fecha
@@ -156,6 +187,7 @@ export function ReservationTable() {
           />
         </div>
 
+        {/* Cliente */}
         <div>
           <label className="mb-1 block text-sm font-medium text-gray-700">
             Cliente
@@ -164,12 +196,18 @@ export function ReservationTable() {
           <input
             type="text"
             placeholder="Buscar cliente..."
-            value={filters.cliente}
-            onChange={(e) => handleFilterChange("cliente", e.target.value)}
+            value={filters.client}
+            onChange={(e) => handleFilterChange("client", e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                handleSearch();
+              }
+            }}
             className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-gray-500"
           />
         </div>
 
+        {/* Hora */}
         <div>
           <label className="mb-1 block text-sm font-medium text-gray-700">
             Hora
@@ -183,6 +221,7 @@ export function ReservationTable() {
           />
         </div>
 
+        {/* Estado */}
         <div>
           <label className="mb-1 block text-sm font-medium text-gray-700">
             Estado
@@ -202,7 +241,27 @@ export function ReservationTable() {
         </div>
       </div>
 
-      <div className="flex justify-end my-4 ">
+      {/* Acciones de filtros */}
+      <div className="flex justify-end gap-2 border-b border-gray-200 p-4">
+        <button
+          type="button"
+          onClick={handleClearFilters}
+          className="rounded-md border border-gray-300 px-4 py-2 font-medium text-gray-700 transition hover:bg-gray-50"
+        >
+          Limpiar
+        </button>
+
+        <button
+          type="button"
+          onClick={handleSearch}
+          className="rounded-md bg-blue-600 px-4 py-2 font-medium text-white transition hover:bg-blue-700"
+        >
+          Buscar
+        </button>
+      </div>
+
+      {/* Crear reservación */}
+      <div className="my-4 flex justify-end px-4">
         <button
           type="button"
           onClick={() => setOpenCreateDialog(true)}
@@ -247,15 +306,17 @@ export function ReservationTable() {
           </thead>
 
           <tbody className="divide-y divide-gray-200">
-            {filteredReservations.map((reservation) => (
+            {reservations.map((reservation) => (
               <tr
                 key={reservation.id}
                 className="transition-colors hover:bg-gray-50"
               >
+                {/* Fecha */}
                 <td className="hidden whitespace-nowrap px-3 py-4 font-medium text-gray-900 md:table-cell lg:px-4">
                   {formatDate(reservation.reservationDate)}
                 </td>
 
+                {/* Cliente */}
                 <td className="max-w-0 px-3 py-4 font-medium text-gray-900 lg:px-4">
                   <div
                     className="break-words"
@@ -266,6 +327,7 @@ export function ReservationTable() {
                   </div>
                 </td>
 
+                {/* Recurso */}
                 <td className="px-3 py-4 font-medium text-gray-900 lg:px-4">
                   <div className="truncate">
                     {RESOURCE_LABELS[reservation.reservationResource] ??
@@ -273,22 +335,27 @@ export function ReservationTable() {
                   </div>
                 </td>
 
+                {/* Hora */}
                 <td className="whitespace-nowrap px-3 py-4 font-medium text-gray-900 lg:px-4">
                   {formatHour(reservation.hour)}
                 </td>
 
+                {/* Horas */}
                 <td className="hidden whitespace-nowrap px-3 py-4 font-medium text-gray-900 sm:table-cell lg:px-4">
                   {reservation.reservedHours}
                 </td>
 
+                {/* Total */}
                 <td className="whitespace-nowrap px-3 py-4 font-medium text-gray-900 lg:px-4">
                   Q{reservation.totalReservation}
                 </td>
 
+                {/* Estado */}
                 <td className="whitespace-nowrap px-3 py-4 lg:px-4">
                   <ReservationStatus status={reservation.status} />
                 </td>
 
+                {/* Acciones */}
                 <td className="px-2 py-4 text-center">
                   <ActionsMenu
                     items={[
@@ -324,7 +391,8 @@ export function ReservationTable() {
               </tr>
             ))}
 
-            {filteredReservations.length === 0 && (
+            {/* Sin resultados */}
+            {reservations.length === 0 && (
               <tr>
                 <td colSpan={8} className="px-4 py-8 text-center text-gray-500">
                   No se encontraron reservaciones.
@@ -338,11 +406,13 @@ export function ReservationTable() {
       {/* Paginación */}
       <Pagination page={page} totalPage={totalPage} onPageChange={setPage} />
 
+      {/* Crear reservación */}
       <CreateReservationDialog
         open={openCreateDialog}
         onClose={() => setOpenCreateDialog(false)}
       />
 
+      {/* Registrar depósito */}
       {selectedReservationId && (
         <CreateReservationDeposit
           open={openDepositDialog}
@@ -357,6 +427,7 @@ export function ReservationTable() {
         />
       )}
 
+      {/* Detalles */}
       {selectedReservationId && (
         <GetReservationDetailsById
           id={selectedReservationId}
@@ -368,6 +439,7 @@ export function ReservationTable() {
         />
       )}
 
+      {/* Editar */}
       {selectedReservationId && (
         <EditReservationDialog
           open={openEditDialog}

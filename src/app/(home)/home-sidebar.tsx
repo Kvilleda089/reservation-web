@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
+
 import {
     CalendarCheck,
     CalendarDays,
@@ -14,6 +15,48 @@ import {
 
 import { Employee } from "./types/employee.interface";
 import { ROLES_LABELS } from "@/src/constants/roles";
+import { can } from "@/src/lib/auth/helper/permissions.helper";
+import type { Permission } from "@/src/constants/permissions";
+
+interface MenuItem {
+    label: string;
+    href: string;
+    icon: React.ElementType;
+    permission: Permission;
+}
+
+const MENU_ITEMS: MenuItem[] = [
+    {
+        label: "Reservaciones",
+        href: "/dashboard",
+        icon: CalendarCheck,
+        permission: "reservations.read",
+    },
+    {
+        label: "Agenda",
+        href: "/agenda",
+        icon: CalendarDays,
+        permission: "agenda.read",
+    },
+    {
+        label: "Empleados",
+        href: "/employee",
+        icon: UserCog,
+        permission: "employeess.read",
+    },
+    {
+        label: "Clientes",
+        href: "/client",
+        icon: Users,
+        permission: "clients.read",
+    },
+    {
+        label: "Estadísticas",
+        href: "/statistics",
+        icon: BarChart3,
+        permission: "statistics.read",
+    },
+];
 
 export default function HomeSidebar() {
     const [employee, setEmployee] = useState<Employee | null>(null);
@@ -41,6 +84,12 @@ export default function HomeSidebar() {
     const closeSidebar = () => {
         setIsOpen(false);
     };
+
+    const visibleMenuItems = employee
+        ? MENU_ITEMS.filter((item) =>
+              can(employee.role, item.permission)
+          )
+        : [];
 
     return (
         <>
@@ -112,60 +161,22 @@ export default function HomeSidebar() {
                 {/* Navigation */}
                 <nav className="p-4">
                     <ul className="space-y-2">
-                        <li>
-                            <Link
-                                href="/dashboard"
-                                onClick={closeSidebar}
-                                className="flex items-center gap-3 rounded-md px-3 py-2 hover:bg-gray-100"
-                            >
-                                <CalendarCheck size={20} />
-                                <span>Reservaciones</span>
-                            </Link>
-                        </li>
+                        {visibleMenuItems.map((item) => {
+                            const Icon = item.icon;
 
-                        <li>
-                            <Link
-                                href="/agenda"
-                                onClick={closeSidebar}
-                                className="flex items-center gap-3 rounded-md px-3 py-2 hover:bg-gray-100"
-                            >
-                                <CalendarDays size={20} />
-                                <span>Agenda</span>
-                            </Link>
-                        </li>
-
-                        <li>
-                            <Link
-                                href="/employee"
-                                onClick={closeSidebar}
-                                className="flex items-center gap-3 rounded-md px-3 py-2 hover:bg-gray-100"
-                            >
-                                <UserCog size={20} />
-                                <span>Empleados</span>
-                            </Link>
-                        </li>
-
-                        <li>
-                            <Link
-                                href="/client"
-                                onClick={closeSidebar}
-                                className="flex items-center gap-3 rounded-md px-3 py-2 hover:bg-gray-100"
-                            >
-                                <Users size={20} />
-                                <span>Clientes</span>
-                            </Link>
-                        </li>
-
-                        <li>
-                            <Link
-                                href="/statistics"
-                                onClick={closeSidebar}
-                                className="flex items-center gap-3 rounded-md px-3 py-2 hover:bg-gray-100"
-                            >
-                                <BarChart3 size={20} />
-                                <span>Estadísticas</span>
-                            </Link>
-                        </li>
+                            return (
+                                <li key={item.href}>
+                                    <Link
+                                        href={item.href}
+                                        onClick={closeSidebar}
+                                        className="flex items-center gap-3 rounded-md px-3 py-2 hover:bg-gray-100"
+                                    >
+                                        <Icon size={20} />
+                                        <span>{item.label}</span>
+                                    </Link>
+                                </li>
+                            );
+                        })}
                     </ul>
                 </nav>
 
