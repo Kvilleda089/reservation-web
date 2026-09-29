@@ -2,7 +2,6 @@
 
 import { FormEvent, useState } from "react";
 import { toast } from "sonner";
-import { X } from "lucide-react";
 import {
   ReservationResourceEnum,
   StatusReservationEnum,
@@ -10,6 +9,9 @@ import {
 import { createReservation } from "../../services/reservation.service";
 import { getApiErrorMessage } from "@/src/lib/errors/api-error";
 import { Spinner } from "@/src/components/ui/spinner";
+import { Modal } from "@/src/components/ui/modal";
+import { Field, Select, TextInput } from "@/src/components/ui/form-field";
+import { Button } from "@/src/components/ui/button";
 
 type ReservationStatus = "PENDIENTE" | "CONFIRMADA";
 
@@ -68,15 +70,11 @@ const initialFormData: FormData = {
 export function CreateReservationDialog({
   open,
   onClose,
-  onSuccess
+  onSuccess,
 }: CreateReservationDialogProps) {
   const [formData, setFormData] = useState<FormData>(initialFormData);
 
   const [submitting, setSubmitting] = useState(false);
-
-  if (!open) {
-    return null;
-  }
 
   const handleClientChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
@@ -119,7 +117,7 @@ export function CreateReservationDialog({
 
     try {
       setSubmitting(true);
-      
+
       const request = {
         client: {
           firstName: formData.client.firstName,
@@ -166,356 +164,229 @@ export function CreateReservationDialog({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-xl bg-white shadow-xl">
-        {/* Header */}
-        <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
-          <div>
-            <h2 className="text-lg font-semibold text-gray-900">
-              Crear Nueva Reserva
-            </h2>
+    <Modal
+      open={open}
+      onClose={onClose}
+      title="Crear Nueva Reserva"
+      description="Ingresa la información del cliente y de la reserva."
+      closeDisabled={submitting}
+      size="lg"
+    >
+      <form onSubmit={handleSubmit} className="space-y-8 px-6 py-6">
+        {/* ============================= */}
+        {/* CLIENTE */}
+        {/* ============================= */}
 
-            <p className="mt-1 text-sm text-gray-500">
-              Ingresa la información del cliente y de la reserva.
+        <section>
+          <div className="mb-4">
+            <h3 className="text-base font-semibold text-gray-900">
+              Información del cliente
+            </h3>
+
+            <p className="text-sm text-gray-500">
+              Datos personales y de contacto del cliente.
             </p>
           </div>
 
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={submitting}
-            className="rounded-md p-2 text-gray-500 transition hover:bg-gray-100 hover:text-gray-700 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            <X size={20} />
-          </button>
-        </div>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <Field label="Primer nombre" htmlFor="firstName">
+              <TextInput
+                id="firstName"
+                type="text"
+                name="firstName"
+                value={formData.client.firstName}
+                onChange={handleClientChange}
+                required
+                placeholder="Ej. María"
+              />
+            </Field>
 
-        <form onSubmit={handleSubmit} className="space-y-8 px-6 py-6">
-          {/* ============================= */}
-          {/* CLIENTE */}
-          {/* ============================= */}
+            <Field label="Segundo nombre" htmlFor="middleName">
+              <TextInput
+                id="middleName"
+                type="text"
+                name="middleName"
+                value={formData.client.middleName}
+                onChange={handleClientChange}
+                placeholder="Ej. Andrea"
+              />
+            </Field>
 
-          <section>
-            <div className="mb-4">
-              <h3 className="text-base font-semibold text-gray-900">
-                Información del cliente
-              </h3>
+            <Field label="Apellido" htmlFor="surname">
+              <TextInput
+                id="surname"
+                type="text"
+                name="surname"
+                value={formData.client.surname}
+                onChange={handleClientChange}
+                required
+                placeholder="Ej. Hernández"
+              />
+            </Field>
 
-              <p className="text-sm text-gray-500">
-                Datos personales y de contacto del cliente.
-              </p>
-            </div>
+            <Field label="Segundo apellido" htmlFor="secondSurname">
+              <TextInput
+                id="secondSurname"
+                type="text"
+                name="secondSurname"
+                value={formData.client.secondSurname}
+                onChange={handleClientChange}
+                placeholder="Ej. Ramírez"
+              />
+            </Field>
 
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <div>
-                <label
-                  htmlFor="firstName"
-                  className="mb-1 block text-sm font-medium text-gray-700"
-                >
-                  Primer nombre
-                </label>
+            <Field label="Correo electrónico" htmlFor="email">
+              <TextInput
+                id="email"
+                type="email"
+                name="email"
+                value={formData.client.email}
+                onChange={handleClientChange}
+                placeholder="cliente@email.com"
+              />
+            </Field>
 
-                <input
-                  id="firstName"
-                  type="text"
-                  name="firstName"
-                  value={formData.client.firstName}
-                  onChange={handleClientChange}
-                  required
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                  placeholder="Ej. María"
-                />
-              </div>
+            <Field label="Teléfono" htmlFor="phoneNumber">
+              <TextInput
+                id="phoneNumber"
+                type="tel"
+                name="phoneNumber"
+                value={formData.client.phoneNumber}
+                onChange={handleClientChange}
+                placeholder="55591629"
+              />
+            </Field>
 
-              <div>
-                <label
-                  htmlFor="middleName"
-                  className="mb-1 block text-sm font-medium text-gray-700"
-                >
-                  Segundo nombre
-                </label>
+            <Field label="Fecha de registro" htmlFor="dateRegistration">
+              <TextInput
+                id="dateRegistration"
+                type="date"
+                name="dateRegistration"
+                value={formData.client.dateRegistration}
+                onChange={handleClientChange}
+                required
+              />
+            </Field>
+          </div>
+        </section>
 
-                <input
-                  id="middleName"
-                  type="text"
-                  name="middleName"
-                  value={formData.client.middleName}
-                  onChange={handleClientChange}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                  placeholder="Ej. Andrea"
-                />
-              </div>
+        {/* ============================= */}
+        {/* RESERVACIÓN */}
+        {/* ============================= */}
 
-              <div>
-                <label
-                  htmlFor="surname"
-                  className="mb-1 block text-sm font-medium text-gray-700"
-                >
-                  Apellido
-                </label>
+        <section>
+          <div className="mb-4">
+            <h3 className="text-base font-semibold text-gray-900">
+              Información de la reserva
+            </h3>
 
-                <input
-                  id="surname"
-                  type="text"
-                  name="surname"
-                  value={formData.client.surname}
-                  onChange={handleClientChange}
-                  required
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                  placeholder="Ej. Hernández"
-                />
-              </div>
+            <p className="text-sm text-gray-500">
+              Define los detalles de la reservación.
+            </p>
+          </div>
 
-              <div>
-                <label
-                  htmlFor="secondSurname"
-                  className="mb-1 block text-sm font-medium text-gray-700"
-                >
-                  Segundo apellido
-                </label>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <Field label="Fecha de reserva" htmlFor="reservationDate">
+              <TextInput
+                id="reservationDate"
+                type="date"
+                name="reservationDate"
+                value={formData.reservation.reservationDate}
+                onChange={handleReservationChange}
+                required
+              />
+            </Field>
 
-                <input
-                  id="secondSurname"
-                  type="text"
-                  name="secondSurname"
-                  value={formData.client.secondSurname}
-                  onChange={handleClientChange}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                  placeholder="Ej. Ramírez"
-                />
-              </div>
+            <Field label="Hora" htmlFor="hour">
+              <TextInput
+                id="hour"
+                type="time"
+                name="hour"
+                value={formData.reservation.hour}
+                onChange={handleReservationChange}
+                required
+              />
+            </Field>
 
-              <div>
-                <label
-                  htmlFor="email"
-                  className="mb-1 block text-sm font-medium text-gray-700"
-                >
-                  Correo electrónico
-                </label>
-
-                <input
-                  id="email"
-                  type="email"
-                  name="email"
-                  value={formData.client.email}
-                  onChange={handleClientChange}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                  placeholder="cliente@email.com"
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="phoneNumber"
-                  className="mb-1 block text-sm font-medium text-gray-700"
-                >
-                  Teléfono
-                </label>
-
-                <input
-                  id="phoneNumber"
-                  type="tel"
-                  name="phoneNumber"
-                  value={formData.client.phoneNumber}
-                  onChange={handleClientChange}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                  placeholder="55591629"
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="dateRegistration"
-                  className="mb-1 block text-sm font-medium text-gray-700"
-                >
-                  Fecha de registro
-                </label>
-
-                <input
-                  id="dateRegistration"
-                  type="date"
-                  name="dateRegistration"
-                  value={formData.client.dateRegistration}
-                  onChange={handleClientChange}
-                  required
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                />
-              </div>
-            </div>
-          </section>
-
-          {/* ============================= */}
-          {/* RESERVACIÓN */}
-          {/* ============================= */}
-
-          <section>
-            <div className="mb-4">
-              <h3 className="text-base font-semibold text-gray-900">
-                Información de la reserva
-              </h3>
-
-              <p className="text-sm text-gray-500">
-                Define los detalles de la reservación.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <div>
-                <label
-                  htmlFor="reservationDate"
-                  className="mb-1 block text-sm font-medium text-gray-700"
-                >
-                  Fecha de reserva
-                </label>
-
-                <input
-                  id="reservationDate"
-                  type="date"
-                  name="reservationDate"
-                  value={formData.reservation.reservationDate}
-                  onChange={handleReservationChange}
-                  required
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="hour"
-                  className="mb-1 block text-sm font-medium text-gray-700"
-                >
-                  Hora
-                </label>
-
-                <input
-                  id="hour"
-                  type="time"
-                  name="hour"
-                  value={formData.reservation.hour}
-                  onChange={handleReservationChange}
-                  required
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="reservationResource"
-                  className="mb-1 block text-sm font-medium text-gray-700"
-                >
-                  Recurso
-                </label>
-
-                <select
-                  id="reservationResource"
-                  name="reservationResource"
-                  value={formData.reservation.reservationResource}
-                  onChange={handleReservationChange}
-                  required
-                  className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                >
-                  <option value="" disabled>
-                    Seleccionar recurso
-                  </option>
-
-                  <option value={ReservationResourceEnum.CANCHA_1}>
-                    Cancha 1
-                  </option>
-
-                  <option value={ReservationResourceEnum.CANCHA_2}>
-                    Cancha 2
-                  </option>
-
-                  <option value={ReservationResourceEnum.SALON}>Salón</option>
-                </select>
-              </div>
-
-              <div>
-                <label
-                  htmlFor="reservedHours"
-                  className="mb-1 block text-sm font-medium text-gray-700"
-                >
-                  Horas reservadas
-                </label>
-
-                <input
-                  id="reservedHours"
-                  type="number"
-                  name="reservedHours"
-                  min="1"
-                  value={formData.reservation.reservedHours}
-                  onChange={handleReservationChange}
-                  required
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="totalReservation"
-                  className="mb-1 block text-sm font-medium text-gray-700"
-                >
-                  Total de la reserva
-                </label>
-
-                <input
-                  id="totalReservation"
-                  type="number"
-                  name="totalReservation"
-                  min="0"
-                  step="0.01"
-                  value={formData.reservation.totalReservation}
-                  onChange={handleReservationChange}
-                  required
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                  placeholder="0.00"
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="status"
-                  className="mb-1 block text-sm font-medium text-gray-700"
-                >
-                  Estado
-                </label>
-
-                <select
-                  id="status"
-                  name="status"
-                  value={formData.reservation.status}
-                  onChange={handleReservationChange}
-                  required
-                  className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                >
-                  <option value="PENDIENTE">Pendiente</option>
-
-                  <option value="CONFIRMADA">Confirmada</option>
-                </select>
-              </div>
-            </div>
-          </section>
-
-          <section>
-            <div className="mb-4">
-              <h3 className="text-base font-semibold text-gray-900">
-                Anticipo
-              </h3>
-
-              <p className="text-sm text-gray-500">
-                Registra el anticipo recibido al momento de crear la reserva.
-              </p>
-            </div>
-
-            <div className="max-w-sm">
-              <label
-                htmlFor="depositAmount"
-                className="mb-1 block text-sm font-medium text-gray-700"
+            <Field label="Recurso" htmlFor="reservationResource">
+              <Select
+                id="reservationResource"
+                name="reservationResource"
+                value={formData.reservation.reservationResource}
+                onChange={handleReservationChange}
+                required
               >
-                Monto del anticipo
-              </label>
+                <option value="" disabled>
+                  Seleccionar recurso
+                </option>
 
-              <input
+                <option value={ReservationResourceEnum.CANCHA_1}>
+                  Cancha 1
+                </option>
+
+                <option value={ReservationResourceEnum.CANCHA_2}>
+                  Cancha 2
+                </option>
+
+                <option value={ReservationResourceEnum.SALON}>Salón</option>
+              </Select>
+            </Field>
+
+            <Field label="Horas reservadas" htmlFor="reservedHours">
+              <TextInput
+                id="reservedHours"
+                type="number"
+                name="reservedHours"
+                min="1"
+                value={formData.reservation.reservedHours}
+                onChange={handleReservationChange}
+                required
+              />
+            </Field>
+
+            <Field label="Total de la reserva" htmlFor="totalReservation">
+              <TextInput
+                id="totalReservation"
+                type="number"
+                name="totalReservation"
+                min="0"
+                step="0.01"
+                value={formData.reservation.totalReservation}
+                onChange={handleReservationChange}
+                required
+                placeholder="0.00"
+              />
+            </Field>
+
+            <Field label="Estado" htmlFor="status">
+              <Select
+                id="status"
+                name="status"
+                value={formData.reservation.status}
+                onChange={handleReservationChange}
+                required
+              >
+                <option value="PENDIENTE">Pendiente</option>
+                <option value="CONFIRMADA">Confirmada</option>
+              </Select>
+            </Field>
+          </div>
+        </section>
+
+        <section>
+          <div className="mb-4">
+            <h3 className="text-base font-semibold text-gray-900">
+              Anticipo
+            </h3>
+
+            <p className="text-sm text-gray-500">
+              Registra el anticipo recibido al momento de crear la reserva.
+            </p>
+          </div>
+
+          <div className="max-w-sm">
+            <Field label="Monto del anticipo" htmlFor="depositAmount">
+              <TextInput
                 id="depositAmount"
                 type="number"
                 name="depositAmount"
@@ -523,39 +394,33 @@ export function CreateReservationDialog({
                 step="0.01"
                 value={formData.depositAmount}
                 onChange={handleDepositChange}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                 placeholder="0.00"
               />
-            </div>
-          </section>
-
-          <div className="flex justify-end gap-3 border-t border-gray-200 pt-5">
-            <button
-              type="button"
-              onClick={onClose}
-              disabled={submitting}
-              className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              Cancelar
-            </button>
-
-            <button
-              type="submit"
-              disabled={submitting}
-              className="flex items-center justify-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {submitting ? (
-                <>
-                  <Spinner className="mr-2 h-4 w-4" />
-                  Creando...
-                </>
-              ) : (
-                "Crear Reserva"
-              )}
-            </button>
+            </Field>
           </div>
-        </form>
-      </div>
-    </div>
+        </section>
+
+        <div className="flex flex-col gap-3 border-t border-gray-200 pt-5 sm:flex-row sm:justify-end">
+          <Button
+            variant="outline"
+            onClick={onClose}
+            disabled={submitting}
+          >
+            Cancelar
+          </Button>
+
+          <Button type="submit" disabled={submitting}>
+            {submitting ? (
+              <>
+                <Spinner className="mr-2 h-4 w-4" />
+                Creando...
+              </>
+            ) : (
+              "Crear Reserva"
+            )}
+          </Button>
+        </div>
+      </form>
+    </Modal>
   );
 }

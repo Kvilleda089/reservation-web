@@ -13,14 +13,15 @@ interface ModalProps {
   title: string;
   description?: string;
   closeDisabled?: boolean;
-  size?: "sm" | "md" | "lg";
+  size?: "sm" | "md" | "lg" | "xl";
   children: ReactNode;
 }
 
-const SIZE_CLASSES: Record<"sm" | "md" | "lg", string> = {
+const SIZE_CLASSES: Record<"sm" | "md" | "lg" | "xl", string> = {
   sm: "max-w-md",
   md: "max-w-2xl",
-  lg: "max-w-4xl",
+  lg: "max-w-3xl",
+  xl: "max-w-5xl",
 };
 
 export function Modal({

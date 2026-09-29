@@ -13,14 +13,19 @@ const FIELD_CLASSES =
 
 export function Field({
   label,
+  htmlFor,
   children,
+  
 }: {
   label: string;
+  htmlFor?: string;
   children: ReactNode;
 }) {
   return (
     <div>
-      <label className="mb-1 block text-sm font-medium text-gray-700">
+      <label
+       htmlFor={htmlFor}
+      className="mb-1 block text-sm font-medium text-gray-700">
         {label}
       </label>
 
