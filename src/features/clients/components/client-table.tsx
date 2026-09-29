@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import {  ClientListResponse } from "../types/client.type";
+import { ClientListResponse } from "../types/client.type";
 import { getOneClient } from "../services/client.service";
 
 import { toast } from "sonner";
@@ -13,6 +13,19 @@ import { HistoryReservationDialog } from "./dialog/history-reservation-dialog";
 
 import { Pagination } from "@/src/components/pagination/pagination";
 import { Client } from "../../dashboard/types/reservation-response.type";
+import { Field, TextInput } from "@/src/components/ui/form-field";
+import { Button } from "@/src/components/ui/button";
+import {
+  Table,
+  TableBody,
+  TableContainer,
+  TableEmptyRow,
+  TableHead,
+  TableRow,
+  TableScroll,
+  Td,
+  Th,
+} from "@/src/components/ui/table";
 
 export function ClientTable() {
   const [clients, setClients] = useState<Client[] | null>(null);
@@ -31,7 +44,6 @@ export function ClientTable() {
     phoneNumber: "",
   });
 
-  
   const [searchFilters, setSearchFilters] = useState({
     firstName: "",
     email: "",
@@ -90,198 +102,143 @@ export function ClientTable() {
 
         setClients(response.data);
         setTotalPage(response.pagination.lastPage);
-
       } catch (error) {
         console.log(error);
 
-        toast.error(
-          "Lo sentimos ocurrió un error al obtener los datos.",
-        );
+        toast.error("Lo sentimos ocurrió un error al obtener los datos.");
       } finally {
         setLoading(false);
       }
     };
 
     fetchClients();
-
-  }, [
-    page,
-    limit,
-    searchFilters,
-  ]);
+  }, [page, limit, searchFilters]);
 
   if (loading) {
     return <PageLoading />;
   }
 
   return (
-    <div className="w-full overflow-visible rounded-xl border border-gray-200 bg-white shadow-sm">
-
+    <TableContainer>
       {/* Filtros */}
       <div className="border-b border-gray-200 p-4">
-
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-
-          <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">
-              Nombre
-            </label>
-
-            <input
+          <Field label="Nombre">
+            <TextInput
               type="text"
               placeholder="Buscar por nombre..."
               value={filters.firstName}
-              onChange={(e) =>
-                handleFilterChange("firstName", e.target.value)
-              }
+              onChange={(e) => handleFilterChange("firstName", e.target.value)}
               onKeyDown={handleKeyDown}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-gray-500"
             />
-          </div>
+          </Field>
 
-          <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">
-              Email
-            </label>
-
-            <input
+          <Field label="Email">
+            <TextInput
               type="text"
               placeholder="Buscar por email..."
               value={filters.email}
-              onChange={(e) =>
-                handleFilterChange("email", e.target.value)
-              }
+              onChange={(e) => handleFilterChange("email", e.target.value)}
               onKeyDown={handleKeyDown}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-gray-500"
             />
-          </div>
+          </Field>
 
-          <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">
-              Teléfono
-            </label>
-
-            <input
+          <Field label="Teléfono">
+            <TextInput
               type="text"
               placeholder="Buscar por teléfono..."
               value={filters.phoneNumber}
-              onChange={(e) =>
-                handleFilterChange("phoneNumber", e.target.value)
-              }
+              onChange={(e) => handleFilterChange("phoneNumber", e.target.value)}
               onKeyDown={handleKeyDown}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-gray-500"
             />
-          </div>
-
+          </Field>
         </div>
 
         <div className="mt-4 flex justify-end">
-          <button
-            type="button"
-            onClick={handleSearch}
-            className="rounded-lg bg-blue-600 px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
-          >
-            Buscar
-          </button>
+          <Button onClick={handleSearch}>Buscar</Button>
         </div>
-
       </div>
 
-      <table className="w-full table-auto text-left text-sm text-gray-600">
-
-        <thead className="border-b border-gray-200 bg-gray-50 text-xs uppercase text-gray-500">
-          <tr>
-            <th className="px-3 py-4 font-semibold lg:px-4">
-              Nombre
-            </th>
-
-            <th className="px-3 py-4 font-semibold lg:px-4">
-              Email
-            </th>
-
-            <th className="px-3 py-4 font-semibold lg:px-4">
-              Teléfono
-            </th>
-
-            <th className="px-3 py-4 font-semibold lg:px-4">
-              Fecha Registro
-            </th>
-
-            <th className="px-3 py-4 font-semibold lg:px-4">
-              Estado
-            </th>
-
-            <th className="px-3 py-4 font-semibold lg:px-4">
-              Acciones
-            </th>
-          </tr>
-        </thead>
-
-        <tbody className="divide-y divide-gray-200">
-
-          {clients?.map((client) => (
-            <tr
-              key={client.id}
-              className="transition-colors hover:bg-gray-50"
-            >
-
-              <td className="px-3 py-4 font-medium text-gray-900 lg:px-4">
-                <div
-                  className="break-words"
-                  title={`${client.firstName} ${client.surname} ${client.secondSurname}`}
-                >
-                  {client.firstName} {client.surname} {client.secondSurname}
-                </div>
-              </td>
-
-              <td className="w-[25%] px-3 py-4 font-medium text-gray-900 lg:px-4">
-                {client.email ?? "—"}
-              </td>
-
-              <td className="w-[15%] px-3 py-4 font-medium text-gray-900 lg:px-4">
-                {client.phoneNumber ?? "—"}
-              </td>
-
-              <td className="px-3 py-4 font-medium text-gray-900 lg:px-4">
-                {formatDate(client.dateRegistration)}
-              </td>
-
-              <td className="px-3 py-4 font-medium text-gray-900 lg:px-4">
-                <StatusBadge
-                  variant={client.status ? "active" : "inactive"}
-                >
-                  {client.status ? "ACTIVO" : "INACTIVO"}
-                </StatusBadge>
-              </td>
-
-              <td className="px-3 py-4 lg:px-4">
-                <button
-                  type="button"
-                  className="text-sm font-medium text-blue-600 hover:underline"
-                  onClick={() => handleViewHistory(client)}
-                >
-                  Ver historial
-                </button>
-              </td>
-
+      <TableScroll>
+        <Table>
+          <TableHead>
+            <tr>
+              <Th>Nombre</Th>
+              <Th className="hidden md:table-cell">Email</Th>
+              <Th className="hidden sm:table-cell">Teléfono</Th>
+              <Th className="hidden lg:table-cell">Fecha Registro</Th>
+              <Th>Estado</Th>
+              <Th>Acciones</Th>
             </tr>
-          ))}
+          </TableHead>
 
-        </tbody>
-      </table>
+          <TableBody>
+            {clients?.map((client) => (
+              <TableRow key={client.id}>
+                <Td className="max-w-0">
+                  <div
+                    className="break-words"
+                    title={`${client.firstName} ${client.surname} ${client.secondSurname}`}
+                  >
+                    {client.firstName} {client.surname} {client.secondSurname}
+                  </div>
+                </Td>
 
-      <HistoryReservationDialog
-        open={historyOpen}
-        client={selectedClient}
-        onClose={() => setHistoryOpen(false)}
-      />
+                <Td className="hidden w-[25%] md:table-cell">
+                  {client.email ?? "—"}
+                </Td>
 
-      <Pagination
-        page={page}
-        totalPage={totalPage}
-        onPageChange={setPage}
-      />
+                <Td className="hidden w-[15%] whitespace-nowrap sm:table-cell">
+                  {client.phoneNumber ?? "—"}
+                </Td>
 
-    </div>
+                <Td className="hidden whitespace-nowrap lg:table-cell">
+                  {formatDate(client.dateRegistration)}
+                </Td>
+
+                <Td>
+                  <StatusBadge
+                    variant={client.status ? "active" : "inactive"}
+                  >
+                    {client.status ? "ACTIVO" : "INACTIVO"}
+                  </StatusBadge>
+                </Td>
+
+                <Td className="whitespace-nowrap">
+                  <button
+                    type="button"
+                    className="text-sm font-medium text-blue-600 hover:underline"
+                    onClick={() => handleViewHistory(client)}
+                  >
+                    Ver historial
+                  </button>
+                </Td>
+              </TableRow>
+            ))}
+
+            {clients?.length === 0 && (
+              <TableEmptyRow colSpan={6}>
+                No se encontraron clientes.
+              </TableEmptyRow>
+            )}
+          </TableBody>
+        </Table>
+      </TableScroll>
+
+      {/* Paginación */}
+      <Pagination page={page} totalPage={totalPage} onPageChange={setPage} />
+
+      {/* Historial */}
+      {selectedClient && (
+        <HistoryReservationDialog
+          open={historyOpen}
+          client={selectedClient}
+          onClose={() => {
+            setHistoryOpen(false);
+            setSelectedClient(null);
+          }}
+        />
+      )}
+    </TableContainer>
   );
 }

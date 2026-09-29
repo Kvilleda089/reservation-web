@@ -29,10 +29,22 @@ import { toast } from "sonner";
 import { useAuth } from "@/src/features/auth/context/auth.context";
 import { can } from "@/src/lib/auth/helper/permissions.helper";
 import { PERMISSIONS } from "@/src/constants/permissions";
+import { Field, Select, TextInput } from "@/src/components/ui/form-field";
+import { Button } from "@/src/components/ui/button";
+import {
+  Table,
+  TableBody,
+  TableContainer,
+  TableEmptyRow,
+  TableHead,
+  TableRow,
+  TableScroll,
+  Td,
+  Th,
+} from "@/src/components/ui/table";
 
 export function ReservationTable() {
-
-  //validación permisos: 
+  //validación permisos:
   const { employee } = useAuth();
 
   const canCreate =
@@ -41,7 +53,6 @@ export function ReservationTable() {
     !!employee && can(employee.role, PERMISSIONS.RESERVATIONS_UPDATE);
   const canCancel =
     !!employee && can(employee.role, PERMISSIONS.RESERVATIONS_CANCEL);
-
 
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [loading, setLoading] = useState(true);
@@ -103,7 +114,6 @@ export function ReservationTable() {
     fetchReservations();
   }, [page, limit, appliedFilters, refreshReservations]);
 
-
   const formatDate = (date: string) => {
     return date.split("T")[0];
   };
@@ -119,19 +129,19 @@ export function ReservationTable() {
     }));
   };
 
-const handleSearch = () => {
-  const nextFilters = Object.fromEntries(
-    Object.entries(filters).filter(([, value]) => value.trim() !== ""),
-  );
+  const handleSearch = () => {
+    const nextFilters = Object.fromEntries(
+      Object.entries(filters).filter(([, value]) => value.trim() !== ""),
+    );
 
-  setPage(1);
+    setPage(1);
 
-  setAppliedFilters(
-    Object.keys(nextFilters).length > 0
-      ? (nextFilters as typeof filters)
-      : undefined,
-  );
-};
+    setAppliedFilters(
+      Object.keys(nextFilters).length > 0
+        ? (nextFilters as typeof filters)
+        : undefined,
+    );
+  };
 
   /**
    * Limpiar filtros.
@@ -185,30 +195,19 @@ const handleSearch = () => {
   }
 
   return (
-    <div className="w-full overflow-visible rounded-xl border border-gray-200 bg-white shadow-sm">
+    <TableContainer>
       {/* Filtros */}
       <div className="grid grid-cols-1 gap-4 border-b border-gray-200 p-4 md:grid-cols-2 lg:grid-cols-4">
-        {/* Fecha */}
-        <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">
-            Fecha
-          </label>
-
-          <input
+        <Field label="Fecha">
+          <TextInput
             type="date"
             value={filters.date}
             onChange={(e) => handleFilterChange("date", e.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-gray-500"
           />
-        </div>
+        </Field>
 
-        {/* Cliente */}
-        <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">
-            Cliente
-          </label>
-
-          <input
+        <Field label="Cliente">
+          <TextInput
             type="text"
             placeholder="Buscar cliente..."
             value={filters.client}
@@ -218,163 +217,130 @@ const handleSearch = () => {
                 handleSearch();
               }
             }}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-gray-500"
           />
-        </div>
+        </Field>
 
-        {/* Hora */}
-        <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">
-            Hora
-          </label>
-
-          <input
+        <Field label="Hora">
+          <TextInput
             type="time"
             value={filters.hour}
             onChange={(e) => handleFilterChange("hour", e.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-gray-500"
           />
-        </div>
+        </Field>
 
-        {/* Estado */}
-        <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">
-            Estado
-          </label>
-
-          <select
+        <Field label="Estado">
+          <Select
             value={filters.status}
             onChange={(e) => handleFilterChange("status", e.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-gray-500"
           >
             <option value="">Todos</option>
             <option value="PENDIENTE">Pendiente</option>
             <option value="CONFIRMADA">Confirmada</option>
             <option value="CANCELADA">Cancelada</option>
             <option value="FINALIZADA">Finalizada</option>
-          </select>
-        </div>
+          </Select>
+        </Field>
       </div>
 
       {/* Acciones de filtros */}
-      <div className="flex justify-end gap-2 border-b border-gray-200 p-4">
-        <button
-          type="button"
-          onClick={handleClearFilters}
-          className="rounded-md border border-gray-300 px-4 py-2 font-medium text-gray-700 transition hover:bg-gray-50"
-        >
+      <div className="flex flex-col gap-2 border-b border-gray-200 p-4 sm:flex-row sm:justify-end">
+        <Button variant="outline" onClick={handleClearFilters}>
           Limpiar
-        </button>
+        </Button>
 
-        <button
-          type="button"
-          onClick={handleSearch}
-          className="rounded-md bg-blue-600 px-4 py-2 font-medium text-white transition hover:bg-blue-700"
-        >
-          Buscar
-        </button>
+        <Button onClick={handleSearch}>Buscar</Button>
       </div>
 
       {/* Crear reservación */}
       <div className="my-4 flex justify-end px-4">
-          {canCreate && (
-            <button
-              type="button"
-              onClick={() => setOpenCreateDialog(true)}
-              className="flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 font-medium text-white transition hover:bg-blue-700"
-            >
-              <Plus size={18} />
-              Crear Nueva Reserva
-            </button>
-          )}
+        {canCreate && (
+          <Button onClick={() => setOpenCreateDialog(true)}>
+            <Plus size={18} />
+            Crear Nueva Reserva
+          </Button>
+        )}
       </div>
 
       {/* Tabla */}
-      <div className="w-full">
-        <table className="w-full table-auto text-left text-sm text-gray-600">
-          <thead className="border-b border-gray-200 bg-gray-50 text-xs uppercase text-gray-500">
+      <TableScroll>
+        <Table>
+          <TableHead>
             <tr>
-              <th className="hidden whitespace-nowrap px-3 py-4 font-semibold md:table-cell lg:px-4">
+              <Th className="hidden whitespace-nowrap md:table-cell">
                 Fecha
-              </th>
+              </Th>
 
-              <th className="px-3 py-4 font-semibold lg:px-4">Cliente</th>
+              <Th>Cliente</Th>
 
-              <th className="px-3 py-4 font-semibold lg:px-4">Recurso</th>
+              <Th className="hidden sm:table-cell">Recurso</Th>
 
-              <th className="whitespace-nowrap px-3 py-4 font-semibold lg:px-4">
-                Hora
-              </th>
+              <Th className="whitespace-nowrap">Hora</Th>
 
-              <th className="hidden whitespace-nowrap px-3 py-4 font-semibold sm:table-cell lg:px-4">
+              <Th className="hidden whitespace-nowrap lg:table-cell">
                 Horas
-              </th>
+              </Th>
 
-              <th className="whitespace-nowrap px-3 py-4 font-semibold lg:px-4">
-                Total
-              </th>
+              <Th className="whitespace-nowrap">Total</Th>
 
-              <th className="px-3 py-4 font-semibold lg:px-4">Estado</th>
+              <Th>Estado</Th>
 
-              <th className="w-12 px-2 py-4 text-center font-semibold">
+              <Th className="w-12 px-2 text-center">
                 <span className="sr-only">Acciones</span>
-              </th>
+              </Th>
             </tr>
-          </thead>
+          </TableHead>
 
-          <tbody className="divide-y divide-gray-200">
+          <TableBody>
             {reservations.map((reservation) => (
-              <tr
-                key={reservation.id}
-                className="transition-colors hover:bg-gray-50"
-              >
+              <TableRow key={reservation.id}>
                 {/* Fecha */}
-                <td className="hidden whitespace-nowrap px-3 py-4 font-medium text-gray-900 md:table-cell lg:px-4">
+                <Td className="hidden whitespace-nowrap md:table-cell">
                   {formatDate(reservation.reservationDate)}
-                </td>
+                </Td>
 
                 {/* Cliente */}
-                <td className="max-w-0 px-3 py-4 font-medium text-gray-900 lg:px-4">
+                <Td className="max-w-0">
                   <div
                     className="break-words"
                     title={`${reservation.client.firstName} ${reservation.client.surname} ${reservation.client.secondSurname}`}
                   >
-                    {reservation.client.firstName} {reservation.client.surname}{" "}
+                    {reservation.client.firstName}{" "}
+                    {reservation.client.surname}{" "}
                     {reservation.client.secondSurname}
                   </div>
-                </td>
+                </Td>
 
                 {/* Recurso */}
-                <td className="px-3 py-4 font-medium text-gray-900 lg:px-4">
+                <Td className="hidden sm:table-cell">
                   <div className="truncate">
                     {RESOURCE_LABELS[reservation.reservationResource] ??
                       reservation.reservationResource}
                   </div>
-                </td>
+                </Td>
 
                 {/* Hora */}
-                <td className="whitespace-nowrap px-3 py-4 font-medium text-gray-900 lg:px-4">
+                <Td className="whitespace-nowrap">
                   {formatHour(reservation.hour)}
-                </td>
+                </Td>
 
                 {/* Horas */}
-                <td className="hidden whitespace-nowrap px-3 py-4 font-medium text-gray-900 sm:table-cell lg:px-4">
+                <Td className="hidden whitespace-nowrap lg:table-cell">
                   {reservation.reservedHours}
-                </td>
+                </Td>
 
                 {/* Total */}
-                <td className="whitespace-nowrap px-3 py-4 font-medium text-gray-900 lg:px-4">
+                <Td className="whitespace-nowrap">
                   Q{reservation.totalReservation}
-                </td>
+                </Td>
 
                 {/* Estado */}
-                <td className="whitespace-nowrap px-3 py-4 lg:px-4">
+                <Td className="whitespace-nowrap">
                   <ReservationStatus status={reservation.status} />
-                </td>
+                </Td>
 
                 {/* Acciones */}
-                <td className="px-2 py-4 text-center">
-                 <ActionsMenu
+                <Td className="px-2 text-center">
+                  <ActionsMenu
                     items={[
                       {
                         label: "Ver reservación",
@@ -406,27 +372,26 @@ const handleSearch = () => {
                             {
                               label: "Cancelar reservación",
                               danger: true,
-                              onClick: () => handleCancelReservation(reservation.id),
+                              onClick: () =>
+                                handleCancelReservation(reservation.id),
                             },
                           ]
                         : []),
                     ]}
                   />
-                </td>
-              </tr>
+                </Td>
+              </TableRow>
             ))}
 
             {/* Sin resultados */}
             {reservations.length === 0 && (
-              <tr>
-                <td colSpan={8} className="px-4 py-8 text-center text-gray-500">
-                  No se encontraron reservaciones.
-                </td>
-              </tr>
+              <TableEmptyRow colSpan={8}>
+                No se encontraron reservaciones.
+              </TableEmptyRow>
             )}
-          </tbody>
-        </table>
-      </div>
+          </TableBody>
+        </Table>
+      </TableScroll>
 
       {/* Paginación */}
       <Pagination page={page} totalPage={totalPage} onPageChange={setPage} />
@@ -436,8 +401,8 @@ const handleSearch = () => {
         open={openCreateDialog}
         onClose={() => setOpenCreateDialog(false)}
         onSuccess={() => {
-            setRefreshReservations((prev) => prev + 1);
-          }}
+          setRefreshReservations((prev) => prev + 1);
+        }}
       />
 
       {/* Registrar depósito */}
@@ -481,6 +446,6 @@ const handleSearch = () => {
           }}
         />
       )}
-    </div>
+    </TableContainer>
   );
 }

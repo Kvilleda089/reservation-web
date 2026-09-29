@@ -18,6 +18,18 @@ import { Pagination } from "@/src/components/pagination/pagination";
 import { ActionsMenu } from "@/src/components/ui/action-menu";
 import { EmployeeDialog } from "./dialog/employee-dialog";
 import { EmployeeCreateDialog } from "./dialog/create-employee-dialog";
+import { Button } from "@/src/components/ui/button";
+import {
+  Table,
+  TableBody,
+  TableContainer,
+  TableEmptyRow,
+  TableHead,
+  TableRow,
+  TableScroll,
+  Td,
+  Th,
+} from "@/src/components/ui/table";
 
 export function EmployeeTable() {
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -157,8 +169,8 @@ export function EmployeeTable() {
   };
 
   return (
-    <div className="w-full overflow-visible rounded-xl border border-gray-200 bg-white shadow-sm">
-      <div className="w-full overflow-x-auto">
+    <TableContainer>
+      <TableScroll>
         {/** Filtros  */}
         <EmployeeFilters
           filters={filters}
@@ -168,46 +180,33 @@ export function EmployeeTable() {
         />
 
         <div className="flex justify-end my-4 ">
-          <button
-            type="button"
-            onClick={() => setOpenDialogCreateEmploy(true)}
-            className="flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 font-medium text-white transition hover:bg-blue-700"
-          >
+          <Button onClick={() => setOpenDialogCreateEmploy(true)}>
             <Plus size={18} />
             Crear Nuevo Empleado
-          </button>
+          </Button>
         </div>
 
         {/**Tabla */}
-        <table className="w-full table-auto text-left text-sm text-gray-600">
-          <thead className="border-b border-gray-200 bg-gray-50 text-xs uppercase text-gray-500">
+        <Table>
+          <TableHead>
             <tr>
-              <th className="px-3 py-4 font-semibold lg:px-4">Empleado</th>
-
-              <th className="px-3 py-4 font-semibold lg:px-4">Usuario</th>
-
-              <th className="px-3 py-4 font-semibold lg:px-4">Email</th>
-
-              <th className="px-3 py-4 font-semibold lg:px-4">Teléfono</th>
-
-              <th className="px-3 py-4 font-semibold lg:px-4">Rol</th>
-
-              <th className="px-3 py-4 font-semibold lg:px-4">Estado</th>
-
-              <th className="w-12 px-2 py-4 text-center font-semibold">
+              <Th>Empleado</Th>
+              <Th className="hidden sm:table-cell">Usuario</Th>
+              <Th className="hidden lg:table-cell">Email</Th>
+              <Th className="hidden md:table-cell">Teléfono</Th>
+              <Th>Rol</Th>
+              <Th>Estado</Th>
+              <Th className="w-12 px-2 text-center">
                 <span className="sr-only">Acciones</span>
-              </th>
+              </Th>
             </tr>
-          </thead>
+          </TableHead>
 
-          <tbody className="divide-y divide-gray-200">
+          <TableBody>
             {employees.map((employee) => (
-              <tr
-                key={employee.id}
-                className="transition-colors hover:bg-gray-50"
-              >
+              <TableRow key={employee.id}>
                 {/* Empleado */}
-                <td className="max-w-0 px-3 py-4 font-medium text-gray-900 lg:px-4">
+                <Td className="max-w-0">
                   <div
                     className="break-words"
                     title={`${employee.firstName} ${employee.surname} ${employee.secondSurname}`}
@@ -215,41 +214,39 @@ export function EmployeeTable() {
                     {employee.firstName} {employee.surname}{" "}
                     {employee.secondSurname}
                   </div>
-                </td>
+                </Td>
 
                 {/* Usuario */}
-                <td className="whitespace-nowrap px-3 py-4 font-medium text-gray-900 lg:px-4">
+                <Td className="hidden whitespace-nowrap sm:table-cell">
                   {employee.username}
-                </td>
+                </Td>
 
                 {/* Email */}
-                <td className="px-3 py-4 lg:px-4">
+                <Td className="hidden lg:table-cell">
                   <div className="max-w-xs truncate" title={employee.email}>
                     {employee.email}
                   </div>
-                </td>
+                </Td>
 
                 {/* Teléfono */}
-                <td className="whitespace-nowrap px-3 py-4 lg:px-4">
+                <Td className="hidden whitespace-nowrap md:table-cell">
                   {employee.phoneNumber ?? "—"}
-                </td>
+                </Td>
 
                 {/* Rol */}
-                <td className="px-3 py-4 font-medium text-gray-900 lg:px-4">
-                  {ROLES_LABELS[employee.role] ?? employee.role}
-                </td>
+                <Td>{ROLES_LABELS[employee.role] ?? employee.role}</Td>
 
                 {/* Estado */}
-                <td className="px-6 py-4">
+                <Td className="px-6">
                   <StatusBadge
                     variant={employee.status ? "active" : "inactive"}
                   >
                     {employee.status ? "ACTIVO" : "INACTIVO"}
                   </StatusBadge>
-                </td>
+                </Td>
 
                 {/* Acciones */}
-                <td className="px-2 py-4 text-center">
+                <Td className="px-2 text-center">
                   <ActionsMenu
                     items={[
                       {
@@ -262,20 +259,18 @@ export function EmployeeTable() {
                       },
                     ]}
                   />
-                </td>
-              </tr>
+                </Td>
+              </TableRow>
             ))}
 
             {employees.length === 0 && (
-              <tr>
-                <td colSpan={7} className="px-4 py-8 text-center text-gray-500">
-                  No se encontraron empleados.
-                </td>
-              </tr>
+              <TableEmptyRow colSpan={7}>
+                No se encontraron empleados.
+              </TableEmptyRow>
             )}
-          </tbody>
-        </table>
-      </div>
+          </TableBody>
+        </Table>
+      </TableScroll>
 
       {/* Paginación */}
       <Pagination page={page} totalPage={totalPage} onPageChange={setPage} />
@@ -292,10 +287,10 @@ export function EmployeeTable() {
       )}
 
       <EmployeeCreateDialog
-          open={openDialogCreateEmploye}
-          onOpenChange={setOpenDialogCreateEmploy}
-          onSuccess={reloadEmployees}
-        />
-    </div>
+        open={openDialogCreateEmploye}
+        onOpenChange={setOpenDialogCreateEmploy}
+        onSuccess={reloadEmployees}
+      />
+    </TableContainer>
   );
 }
