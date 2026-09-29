@@ -2,6 +2,8 @@
 
 import { Role } from "@/src/constants/roles";
 import { GetOneEmployeeFilters } from "../types/employee.types";
+import { Field, Select, TextInput } from "@/src/components/ui/form-field";
+import { Button } from "@/src/components/ui/button";
 
 interface EmployeeFiltersProps {
   filters: GetOneEmployeeFilters;
@@ -29,64 +31,35 @@ export function EmployeeFilters({
   return (
     <div className="mb-6 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {/* Nombre */}
-        <div>
-          <label className="mb-1.5 block text-sm font-medium text-gray-700">
-            Nombre
-          </label>
-
-          <input
+        <Field label="Nombre">
+          <TextInput
             type="text"
             placeholder="Buscar por nombre"
             value={filters.firstName ?? ""}
-            onChange={(event) =>
-              handleChange("firstName", event.target.value)
-            }
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-gray-500 focus:ring-1 focus:ring-gray-500"
+            onChange={(event) => handleChange("firstName", event.target.value)}
           />
-        </div>
+        </Field>
 
-        {/* Usuario */}
-        <div>
-          <label className="mb-1.5 block text-sm font-medium text-gray-700">
-            Usuario
-          </label>
-
-          <input
+        <Field label="Usuario">
+          <TextInput
             type="text"
             placeholder="Buscar por usuario"
             value={filters.username ?? ""}
-            onChange={(event) =>
-              handleChange("username", event.target.value)
-            }
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-gray-500 focus:ring-1 focus:ring-gray-500"
+            onChange={(event) => handleChange("username", event.target.value)}
           />
-        </div>
+        </Field>
 
-        {/* Email */}
-        <div>
-          <label className="mb-1.5 block text-sm font-medium text-gray-700">
-            Email
-          </label>
-
-          <input
+        <Field label="Email">
+          <TextInput
             type="email"
             placeholder="Buscar por email"
             value={filters.email ?? ""}
-            onChange={(event) =>
-              handleChange("email", event.target.value)
-            }
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-gray-500 focus:ring-1 focus:ring-gray-500"
+            onChange={(event) => handleChange("email", event.target.value)}
           />
-        </div>
+        </Field>
 
-        {/* Rol */}
-        <div>
-          <label className="mb-1.5 block text-sm font-medium text-gray-700">
-            Rol
-          </label>
-
-          <select
+        <Field label="Rol">
+          <Select
             value={filters.role ?? "ALL"}
             onChange={(event) =>
               onChange({
@@ -97,34 +70,18 @@ export function EmployeeFilters({
                     : (event.target.value as Role),
               })
             }
-            className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm outline-none focus:border-gray-500 focus:ring-1 focus:ring-gray-500"
           >
             <option value="ALL">Todos</option>
-            <option value="SUPER_ADMINISTRATOR">
-              Super Administrador
-            </option>
-            <option value="ADMINISTRATOR">
-              Administrador
-            </option>
-            <option value="COURT_MANAGER">
-              Encargado de Cancha
-            </option>
-            <option value="CLEANING_STAFF">
-              Personal de Limpieza
-            </option>
-            <option value="RECEPTIONIST">
-              Recepcionista
-            </option>
-          </select>
-        </div>
+            <option value="SUPER_ADMINISTRATOR">Super Administrador</option>
+            <option value="ADMINISTRATOR">Administrador</option>
+            <option value="COURT_MANAGER">Encargado de Cancha</option>
+            <option value="CLEANING_STAFF">Personal de Limpieza</option>
+            <option value="RECEPTIONIST">Recepcionista</option>
+          </Select>
+        </Field>
 
-        {/* Estado */}
-        <div>
-          <label className="mb-1.5 block text-sm font-medium text-gray-700">
-            Estado
-          </label>
-
-          <select
+        <Field label="Estado">
+          <Select
             value={
               filters.status === undefined
                 ? "ALL"
@@ -141,32 +98,21 @@ export function EmployeeFilters({
                     : event.target.value === "ACTIVE",
               })
             }
-            className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm outline-none focus:border-gray-500 focus:ring-1 focus:ring-gray-500"
           >
             <option value="ALL">Todos</option>
             <option value="ACTIVE">Activo</option>
             <option value="INACTIVE">Inactivo</option>
-          </select>
-        </div>
+          </Select>
+        </Field>
       </div>
 
       {/* Acciones */}
-      <div className="mt-5 flex justify-end gap-3">
-        <button
-          type="button"
-          onClick={onClear}
-          className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-        >
+      <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:justify-end">
+        <Button variant="outline" onClick={onClear}>
           Limpiar
-        </button>
+        </Button>
 
-        <button
-          type="button"
-          onClick={onSearch}
-          className="rounded-lg bg-black px-4 py-2 text-sm font-medium text-white hover:bg-gray-800"
-        >
-          Buscar
-        </button>
+        <Button onClick={onSearch}>Buscar</Button>
       </div>
     </div>
   );

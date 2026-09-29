@@ -13,5 +13,9 @@ export const login = async (
 
 
     return response.data;
-}
+};
+
+export const logout = async (): Promise<void> => {
+    await api_reservation.post("/auth/logout");
+};
 

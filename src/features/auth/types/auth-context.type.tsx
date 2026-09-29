@@ -14,4 +14,5 @@ export interface AuthContextType extends AuthState  {
     accessToken: string,
     employee: EmployeeResponse,
   ) => void;
+  logout: () => Promise<void>;
 }
