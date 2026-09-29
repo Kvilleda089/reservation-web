@@ -54,7 +54,7 @@ export default function LoginForm() {
       });
 
       const fullName = `${response.employee.firstName} ${response.employee.surname}`;
-      toast.success(`Iniciso de sesión existoso. Bienvenido ${fullName}`);
+      toast.success(`Inicio de sesión exitoso. Bienvenido ${fullName}`);
       setAuth(response.accessToken, response.employee);
 
       const defaultRoute = getDefaultRoute(response.employee.role);
