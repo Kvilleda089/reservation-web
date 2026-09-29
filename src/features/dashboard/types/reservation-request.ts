@@ -38,4 +38,11 @@ export enum StatusReservationEnum {
   CONFIRMADA = "CONFIRMADA",
   CANCELADA = "CANCELADA",
   FINALIZADA = "FINALIZADA",
+};
+
+export interface ReservationFilters {
+    date?: string;
+    client?: string;
+    hour?: string;
+    status?: string;
 }

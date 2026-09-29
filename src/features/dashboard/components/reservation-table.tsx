@@ -1,24 +1,59 @@
+"use client";
+
 import { useEffect, useState } from "react";
+
 import { Plus } from "lucide-react";
 
 import { Reservation } from "../types/reservation-response.type";
-import { getReservation, updateReservationId } from "../services/reservation.service";
+
+import {
+  getReservation,
+  updateReservationId,
+} from "../services/reservation.service";
 
 import { ReservationStatus } from "./reservation-status";
 import { ActionsMenu } from "../../../components/ui/action-menu";
 import { CreateReservationDialog } from "./dialog/create-reservation";
 import { CreateReservationDeposit } from "./dialog/reservation-deposit";
+
 import {
   GetReservationDetailsById,
   RESOURCE_LABELS,
 } from "./dialog/get-reservation-by-id";
+
 import { PageLoading } from "@/src/components/loading/page-loading";
 import { Pagination } from "@/src/components/pagination/pagination";
 import { EditReservationDialog } from "./dialog/edit-reservation";
 import { getApiErrorMessage } from "@/src/lib/errors/api-error";
 import { toast } from "sonner";
+import { useAuth } from "@/src/features/auth/context/auth.context";
+import { can } from "@/src/lib/auth/helper/permissions.helper";
+import { PERMISSIONS } from "@/src/constants/permissions";
+import { Field, Select, TextInput } from "@/src/components/ui/form-field";
+import { Button } from "@/src/components/ui/button";
+import {
+  Table,
+  TableBody,
+  TableContainer,
+  TableEmptyRow,
+  TableHead,
+  TableRow,
+  TableScroll,
+  Td,
+  Th,
+} from "@/src/components/ui/table";
 
 export function ReservationTable() {
+  //validación permisos:
+  const { employee } = useAuth();
+
+  const canCreate =
+    !!employee && can(employee.role, PERMISSIONS.RESERVATIONS_CREATE);
+  const canUpdate =
+    !!employee && can(employee.role, PERMISSIONS.RESERVATIONS_UPDATE);
+  const canCancel =
+    !!employee && can(employee.role, PERMISSIONS.RESERVATIONS_CANCEL);
+
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -28,24 +63,29 @@ export function ReservationTable() {
 
   const [filters, setFilters] = useState({
     date: "",
-    cliente: "",
+    client: "",
     hour: "",
     status: "",
   });
 
-  //Open Dialogo
+  const [appliedFilters, setAppliedFilters] = useState<
+    typeof filters | undefined
+  >(undefined);
+
+  // Dialog crear reservación
   const [openCreateDialog, setOpenCreateDialog] = useState(false);
 
-  //Dialogo deposito
+  // Dialog depósito
   const [openDepositDialog, setOpenDepositDialog] = useState(false);
+
   const [selectedReservationId, setSelectedReservationId] = useState<
     string | null
   >(null);
 
-  //Dialogo detalles reservaciones
+  // Dialog detalles
   const [openReservationDetails, setOpenReservationDetails] = useState(false);
 
-  //Dialog edicion reservaciones
+  // Dialog edición
   const [openEditDialog, setOpenEditDialog] = useState(false);
 
   const [refreshReservations, setRefreshReservations] = useState(0);
@@ -55,78 +95,32 @@ export function ReservationTable() {
       try {
         setLoading(true);
 
-        const response = await getReservation(page, limit);
+        const response = await getReservation(page, limit, appliedFilters);
 
         setReservations(response.data);
+
         setTotalPage(Math.ceil(response.pagination.totalRecords / limit));
       } catch (error) {
-        console.error("Error al obtener reservaciones: ", error);
+        console.error("Error al obtener reservaciones:", error);
+
+        toast.error(
+          `No se pudieron obtener las reservaciones: ${getApiErrorMessage(error)}`,
+        );
       } finally {
         setLoading(false);
       }
     };
 
     fetchReservations();
-  }, [page, limit, refreshReservations]);
+  }, [page, limit, appliedFilters, refreshReservations]);
 
   const formatDate = (date: string) => {
     return date.split("T")[0];
   };
 
-  const handleCancelReservation = (reservationId: string) => {
-  toast("¿Está seguro que desea cancelar la reservación?", {
-    action: {
-      label: "Sí, cancelar",
-      onClick: async () => {
-        try {
-          await updateReservationId(reservationId, {
-            status: "CANCELADA",
-          });
-
-          toast.success("Reservación cancelada correctamente");
-
-          setRefreshReservations((prev) => prev + 1);
-        } catch (error) {
-          console.error("Error cancelando reservación:", error);
-
-          toast.error(
-            `No se pudo cancelar la reservación, motivo: ${getApiErrorMessage(error)}`
-          );
-        }
-      },
-    },
-    cancel: {
-      label: "No, regresar",
-      onClick: () => {},
-    },
-  });
-};
-
   const formatHour = (date: string) => {
     return date.split("T")[1].substring(0, 5);
   };
-
-  const filteredReservations = reservations.filter((reservation) => {
-    const reservationDate = formatDate(reservation.reservationDate);
-    const reservationHour = formatHour(reservation.hour);
-
-    const clientName =
-      `${reservation.client.firstName} ${reservation.client.surname} ${reservation.client.secondSurname}`
-        .toLowerCase()
-        .trim();
-
-    const matchesDate = !filters.date || reservationDate === filters.date;
-
-    const matchesClient =
-      !filters.cliente || clientName.includes(filters.cliente.toLowerCase());
-
-    const matchesHour = !filters.hour || reservationHour === filters.hour;
-
-    const matchesStatus =
-      !filters.status || reservation.status === filters.status;
-
-    return matchesDate && matchesClient && matchesHour && matchesStatus;
-  });
 
   const handleFilterChange = (field: keyof typeof filters, value: string) => {
     setFilters((prev) => ({
@@ -135,161 +129,217 @@ export function ReservationTable() {
     }));
   };
 
+  const handleSearch = () => {
+    const nextFilters = Object.fromEntries(
+      Object.entries(filters).filter(([, value]) => value.trim() !== ""),
+    );
+
+    setPage(1);
+
+    setAppliedFilters(
+      Object.keys(nextFilters).length > 0
+        ? (nextFilters as typeof filters)
+        : undefined,
+    );
+  };
+
+  /**
+   * Limpiar filtros.
+   */
+  const handleClearFilters = () => {
+    const emptyFilters = {
+      date: "",
+      client: "",
+      hour: "",
+      status: "",
+    };
+
+    setFilters(emptyFilters);
+    setAppliedFilters(undefined);
+    setPage(1);
+  };
+
+  const handleCancelReservation = (reservationId: string) => {
+    toast("¿Está seguro que desea cancelar la reservación?", {
+      action: {
+        label: "Sí, cancelar",
+
+        onClick: async () => {
+          try {
+            await updateReservationId(reservationId, {
+              status: "CANCELADA",
+            });
+
+            toast.success("Reservación cancelada correctamente");
+
+            setRefreshReservations((prev) => prev + 1);
+          } catch (error) {
+            console.error("Error cancelando reservación:", error);
+
+            toast.error(
+              `No se pudo cancelar la reservación, motivo: ${getApiErrorMessage(error)}`,
+            );
+          }
+        },
+      },
+
+      cancel: {
+        label: "No, regresar",
+        onClick: () => {},
+      },
+    });
+  };
+
   if (loading) {
     return <PageLoading />;
   }
 
   return (
-    <div className="w-full overflow-visible rounded-xl border border-gray-200 bg-white shadow-sm">
+    <TableContainer>
       {/* Filtros */}
       <div className="grid grid-cols-1 gap-4 border-b border-gray-200 p-4 md:grid-cols-2 lg:grid-cols-4">
-        <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">
-            Fecha
-          </label>
-
-          <input
+        <Field label="Fecha">
+          <TextInput
             type="date"
             value={filters.date}
             onChange={(e) => handleFilterChange("date", e.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-gray-500"
           />
-        </div>
+        </Field>
 
-        <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">
-            Cliente
-          </label>
-
-          <input
+        <Field label="Cliente">
+          <TextInput
             type="text"
             placeholder="Buscar cliente..."
-            value={filters.cliente}
-            onChange={(e) => handleFilterChange("cliente", e.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-gray-500"
+            value={filters.client}
+            onChange={(e) => handleFilterChange("client", e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                handleSearch();
+              }
+            }}
           />
-        </div>
+        </Field>
 
-        <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">
-            Hora
-          </label>
-
-          <input
+        <Field label="Hora">
+          <TextInput
             type="time"
             value={filters.hour}
             onChange={(e) => handleFilterChange("hour", e.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-gray-500"
           />
-        </div>
+        </Field>
 
-        <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">
-            Estado
-          </label>
-
-          <select
+        <Field label="Estado">
+          <Select
             value={filters.status}
             onChange={(e) => handleFilterChange("status", e.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-gray-500"
           >
             <option value="">Todos</option>
             <option value="PENDIENTE">Pendiente</option>
             <option value="CONFIRMADA">Confirmada</option>
             <option value="CANCELADA">Cancelada</option>
             <option value="FINALIZADA">Finalizada</option>
-          </select>
-        </div>
+          </Select>
+        </Field>
       </div>
 
-      <div className="flex justify-end my-4 ">
-        <button
-          type="button"
-          onClick={() => setOpenCreateDialog(true)}
-          className="flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 font-medium text-white transition hover:bg-blue-700"
-        >
-          <Plus size={18} />
-          Crear Nueva Reserva
-        </button>
+      {/* Acciones de filtros */}
+      <div className="flex flex-col gap-2 border-b border-gray-200 p-4 sm:flex-row sm:justify-end">
+        <Button variant="outline" onClick={handleClearFilters}>
+          Limpiar
+        </Button>
+
+        <Button onClick={handleSearch}>Buscar</Button>
+      </div>
+
+      {/* Crear reservación */}
+      <div className="my-4 flex justify-end px-4">
+        {canCreate && (
+          <Button onClick={() => setOpenCreateDialog(true)}>
+            <Plus size={18} />
+            Crear Nueva Reserva
+          </Button>
+        )}
       </div>
 
       {/* Tabla */}
-      <div className="w-full">
-        <table className="w-full table-auto text-left text-sm text-gray-600">
-          <thead className="border-b border-gray-200 bg-gray-50 text-xs uppercase text-gray-500">
+      <TableScroll>
+        <Table>
+          <TableHead>
             <tr>
-              <th className="hidden whitespace-nowrap px-3 py-4 font-semibold md:table-cell lg:px-4">
+              <Th className="hidden whitespace-nowrap md:table-cell">
                 Fecha
-              </th>
+              </Th>
 
-              <th className="px-3 py-4 font-semibold lg:px-4">Cliente</th>
+              <Th>Cliente</Th>
 
-              <th className="px-3 py-4 font-semibold lg:px-4">Recurso</th>
+              <Th className="hidden sm:table-cell">Recurso</Th>
 
-              <th className="whitespace-nowrap px-3 py-4 font-semibold lg:px-4">
-                Hora
-              </th>
+              <Th className="whitespace-nowrap">Hora</Th>
 
-              <th className="hidden whitespace-nowrap px-3 py-4 font-semibold sm:table-cell lg:px-4">
+              <Th className="hidden whitespace-nowrap lg:table-cell">
                 Horas
-              </th>
+              </Th>
 
-              <th className="whitespace-nowrap px-3 py-4 font-semibold lg:px-4">
-                Total
-              </th>
+              <Th className="whitespace-nowrap">Total</Th>
 
-              <th className="px-3 py-4 font-semibold lg:px-4">Estado</th>
+              <Th>Estado</Th>
 
-              <th className="w-12 px-2 py-4 text-center font-semibold">
+              <Th className="w-12 px-2 text-center">
                 <span className="sr-only">Acciones</span>
-              </th>
+              </Th>
             </tr>
-          </thead>
+          </TableHead>
 
-          <tbody className="divide-y divide-gray-200">
-            {filteredReservations.map((reservation) => (
-              <tr
-                key={reservation.id}
-                className="transition-colors hover:bg-gray-50"
-              >
-                <td className="hidden whitespace-nowrap px-3 py-4 font-medium text-gray-900 md:table-cell lg:px-4">
+          <TableBody>
+            {reservations.map((reservation) => (
+              <TableRow key={reservation.id}>
+                {/* Fecha */}
+                <Td className="hidden whitespace-nowrap md:table-cell">
                   {formatDate(reservation.reservationDate)}
-                </td>
+                </Td>
 
-                <td className="max-w-0 px-3 py-4 font-medium text-gray-900 lg:px-4">
+                {/* Cliente */}
+                <Td className="max-w-0">
                   <div
                     className="break-words"
                     title={`${reservation.client.firstName} ${reservation.client.surname} ${reservation.client.secondSurname}`}
                   >
-                    {reservation.client.firstName} {reservation.client.surname}{" "}
+                    {reservation.client.firstName}{" "}
+                    {reservation.client.surname}{" "}
                     {reservation.client.secondSurname}
                   </div>
-                </td>
+                </Td>
 
-                <td className="px-3 py-4 font-medium text-gray-900 lg:px-4">
+                {/* Recurso */}
+                <Td className="hidden sm:table-cell">
                   <div className="truncate">
                     {RESOURCE_LABELS[reservation.reservationResource] ??
                       reservation.reservationResource}
                   </div>
-                </td>
+                </Td>
 
-                <td className="whitespace-nowrap px-3 py-4 font-medium text-gray-900 lg:px-4">
+                {/* Hora */}
+                <Td className="whitespace-nowrap">
                   {formatHour(reservation.hour)}
-                </td>
+                </Td>
 
-                <td className="hidden whitespace-nowrap px-3 py-4 font-medium text-gray-900 sm:table-cell lg:px-4">
+                {/* Horas */}
+                <Td className="hidden whitespace-nowrap lg:table-cell">
                   {reservation.reservedHours}
-                </td>
+                </Td>
 
-                <td className="whitespace-nowrap px-3 py-4 font-medium text-gray-900 lg:px-4">
+                {/* Total */}
+                <Td className="whitespace-nowrap">
                   Q{reservation.totalReservation}
-                </td>
+                </Td>
 
-                <td className="whitespace-nowrap px-3 py-4 lg:px-4">
+                {/* Estado */}
+                <Td className="whitespace-nowrap">
                   <ReservationStatus status={reservation.status} />
-                </td>
+                </Td>
 
-                <td className="px-2 py-4 text-center">
+                {/* Acciones */}
+                <Td className="px-2 text-center">
                   <ActionsMenu
                     items={[
                       {
@@ -299,50 +349,63 @@ export function ReservationTable() {
                           setOpenReservationDetails(true);
                         },
                       },
-                      {
-                        label: "Editar",
-                        onClick: () => {
-                          setSelectedReservationId(reservation.id);
-                          setOpenEditDialog(true);
-                        },
-                      },
-                      {
-                        label: "Registrar anticipo",
-                        onClick: () => {
-                          setSelectedReservationId(reservation.id);
-                          setOpenDepositDialog(true);
-                        },
-                      },
-                      {
-                        label: "Cancelar reservación",
-                        danger: true,
-                        onClick: () => handleCancelReservation(reservation.id),
-                      },
+                      ...(canUpdate
+                        ? [
+                            {
+                              label: "Editar",
+                              onClick: () => {
+                                setSelectedReservationId(reservation.id);
+                                setOpenEditDialog(true);
+                              },
+                            },
+                            {
+                              label: "Registrar anticipo",
+                              onClick: () => {
+                                setSelectedReservationId(reservation.id);
+                                setOpenDepositDialog(true);
+                              },
+                            },
+                          ]
+                        : []),
+                      ...(canCancel
+                        ? [
+                            {
+                              label: "Cancelar reservación",
+                              danger: true,
+                              onClick: () =>
+                                handleCancelReservation(reservation.id),
+                            },
+                          ]
+                        : []),
                     ]}
                   />
-                </td>
-              </tr>
+                </Td>
+              </TableRow>
             ))}
 
-            {filteredReservations.length === 0 && (
-              <tr>
-                <td colSpan={8} className="px-4 py-8 text-center text-gray-500">
-                  No se encontraron reservaciones.
-                </td>
-              </tr>
+            {/* Sin resultados */}
+            {reservations.length === 0 && (
+              <TableEmptyRow colSpan={8}>
+                No se encontraron reservaciones.
+              </TableEmptyRow>
             )}
-          </tbody>
-        </table>
-      </div>
+          </TableBody>
+        </Table>
+      </TableScroll>
 
       {/* Paginación */}
       <Pagination page={page} totalPage={totalPage} onPageChange={setPage} />
 
+      {/* Crear reservación */}
       <CreateReservationDialog
         open={openCreateDialog}
         onClose={() => setOpenCreateDialog(false)}
+        onSuccess={() => {
+          setRefreshReservations((prev) => prev + 1);
+        }}
       />
 
+      {/* Registrar depósito */}
       {selectedReservationId && (
         <CreateReservationDeposit
           open={openDepositDialog}
@@ -357,6 +420,7 @@ export function ReservationTable() {
         />
       )}
 
+      {/* Detalles */}
       {selectedReservationId && (
         <GetReservationDetailsById
           id={selectedReservationId}
@@ -368,6 +432,7 @@ export function ReservationTable() {
         />
       )}
 
+      {/* Editar */}
       {selectedReservationId && (
         <EditReservationDialog
           open={openEditDialog}
@@ -381,6 +446,6 @@ export function ReservationTable() {
           }}
         />
       )}
-    </div>
+    </TableContainer>
   );
 }

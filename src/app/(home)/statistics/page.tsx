@@ -4,7 +4,7 @@ import Statistics from "@/src/features/statistics/components/statistics";
 
 export default function StatisticsPage() {
   return (
-<ProtectedRoute permission="agenda.read">
+<ProtectedRoute permission="statistics.read">
   <main>
     <Statistics/>
   </main>

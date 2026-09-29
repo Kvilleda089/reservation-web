@@ -1,6 +1,6 @@
 import api_reservation from "@/src/lib/axios/axios";
 import { ReservationDetailResponse, ReservationResponse, UpdateReservation } from "../types/reservation-response.type";
-import { CreateReservationRequest } from "../types/reservation-request";
+import { CreateReservationRequest, ReservationFilters } from "../types/reservation-request";
 import { CreateReservationDepositRequest } from "../types/reservation-deposit-request";
 
 
@@ -8,6 +8,7 @@ import { CreateReservationDepositRequest } from "../types/reservation-deposit-re
 export const getReservation = async (
     page: number,
     limit: number,
+    filters?: ReservationFilters,
 ): Promise<ReservationResponse> => {
 
     const response = await api_reservation.get<ReservationResponse>(
@@ -15,7 +16,8 @@ export const getReservation = async (
         {
             params: {
                 page,
-                limit
+                limit,
+                ...filters,
             },
         },
     );
