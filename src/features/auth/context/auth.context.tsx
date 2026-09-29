@@ -1,4 +1,3 @@
-
 "use client";
 
 import {
@@ -16,6 +15,7 @@ import {
   subscribe,
 } from "../store/auth.store";
 
+import { logout as logoutRequest } from "../services/auth.service";
 import type { AuthContextType } from "../types/auth-context.type";
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -25,17 +25,25 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
-  const auth = useSyncExternalStore(
-    subscribe,
-    getSnapshot,
-    getServerSnapshot,
-  );
+  const auth = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
   const setAuth = (
     accessToken: string,
     employee: AuthContextType["employee"],
   ) => {
     setAuthStore(accessToken, employee);
+  };
+
+  const logout = async () => {
+    try {
+      
+      await logoutRequest();
+    } catch (error) {
+     
+      console.error("Error al cerrar sesión en el servidor:", error);
+    } finally {
+      clearAuth();
+    }
   };
 
   return (
@@ -45,6 +53,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         accessToken: auth.accessToken,
         isInitialized: auth.isInitialized,
         setAuth,
+        logout,
       }}
     >
       {children}
@@ -61,4 +70,3 @@ export const useAuth = (): AuthContextType => {
 
   return context;
 };
-
